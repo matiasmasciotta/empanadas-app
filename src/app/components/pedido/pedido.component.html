@@ -1,0 +1,8 @@
+<!-- Contenido del componente Pedido -->
+<div *ngFor="let empanada of empanadas">
+  <span>{{ empanada.nombre }}</span>
+  <button (click)="agregarEmpanada(empanada.nombre)">Agregar</button>
+</div>
+<button (click)="guardarPedido()">Guardar Pedido</button>
+<!-- Botón para volver al home -->
+<a class="pill" routerLink="/">Volver al Home</a>
