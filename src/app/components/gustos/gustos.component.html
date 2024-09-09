@@ -2,3 +2,26 @@
 <h2>Agregar Gustos</h2>
 <!-- Botón para volver al home -->
 <a class="pill" routerLink="/">Volver al Home</a>
+
+<div>
+  <h3>Gustos Disponibles</h3>
+  <ul>
+    <li *ngFor="let gusto of gustos">
+      {{ gusto }}
+      <button *ngIf="!defaultGustos.includes(gusto)" (click)="editGusto(gusto)">Editar</button>
+      <button *ngIf="!defaultGustos.includes(gusto)" (click)="removeGusto(gusto)">Eliminar</button>
+    </li>
+  </ul>
+</div>
+
+<div>
+  <h3>Agregar Nuevo Gusto</h3>
+  <input [(ngModel)]="newGusto" placeholder="Nombre del nuevo gusto">
+  <button (click)="addGusto()">Agregar</button>
+</div>
+
+<div *ngIf="editingGusto">
+  <h3>Editar Gusto</h3>
+  <input [(ngModel)]="editedGusto" placeholder="Nuevo nombre del gusto">
+  <button (click)="updateGusto()">Actualizar</button>
+</div>
