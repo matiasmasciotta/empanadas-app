@@ -1,4 +1,25 @@
-<!-- Contenido del componente Amigos -->
-<h2>Agregar Amigos</h2>
-<!-- Botón para volver al home -->
-<a class="pill" routerLink="/">Volver al Home</a>
+<div>
+  <h3>Amigos Disponibles</h3>
+  <ul>
+    <li *ngFor="let amigo of amigos">
+      {{ amigo.nombre }}
+      <button (click)="openEditModal(amigo)">Editar</button>
+      <button (click)="removeAmigo(amigo.nombre)">Eliminar</button>
+    </li>
+  </ul>
+</div>
+
+<div>
+  <h3>Agrega un Amigo</h3>
+  <input [(ngModel)]="newAmigo.nombre" placeholder="Nombre del nuevo amigo">
+  <!-- Puedes agregar más campos si es necesario -->
+  <button (click)="addAmigo()">Agregar</button>
+</div>
+
+<app-modal
+  *ngIf="showEditModal"
+  [title]="'Editar Amigo'"
+  [content]="editingAmigo ? editingAmigo.nombre : ''"
+  (submit)="updateAmigo({ nombre: $event, pedidos: [] })"
+  (close)="closeEditModal()">
+</app-modal>
