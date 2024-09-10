@@ -31,15 +31,21 @@ export class PedidoComponent implements OnInit {
   ngOnInit() {
     const gustosGuardados = localStorage.getItem('gustos');
     const amigosGuardados = localStorage.getItem('amigos');
-
+  
     if (gustosGuardados) {
       this.gustos = JSON.parse(gustosGuardados);
     } else {
       this.gustos = ['Carne', 'Pollo', 'Cheeseburguer', 'Panceta y Ciruela'];
     }
-
+  
     if (amigosGuardados) {
       this.amigos = JSON.parse(amigosGuardados);
+      // Asegúrate de que cada amigo tenga un array de pedidos
+      this.amigos.forEach(amigo => {
+        if (!amigo.pedido) {
+          amigo.pedido = [];
+        }
+      });
     } else {
       this.amigos = [
         { nombre: 'Matias', pedido: [] }, 
@@ -81,11 +87,12 @@ export class PedidoComponent implements OnInit {
   }
 
   calcularTotalGeneral(): number {
+    // Solo contar amigos que tengan al menos un pedido
     return this.amigos
-      .filter(amigo => amigo.pedido.length > 0)
+      .filter(amigo => amigo.pedido && amigo.pedido.length > 0)
       .reduce((total, amigo) => total + this.calcularTotalAmigo(amigo), 0);
   }
-
+  
   calcularProporcionEnvio(amigo: Amigo): number {
     const cantidadConPedidos = this.amigos.filter(a => a.pedido.length > 0).length;
     const proporcionEnvio = cantidadConPedidos > 0 ? this.costoEnvio / cantidadConPedidos : 0;

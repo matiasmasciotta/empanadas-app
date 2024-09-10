@@ -10,7 +10,9 @@
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">Amigo:</span>
           <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
-            <option *ngFor="let amigo of amigos" [ngValue]="amigo">{{ amigo.nombre }}</option>
+            <option *ngFor="let amigo of amigos" [ngValue]="amigo">
+              {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
+            </option>
           </select>
         </div>
 
