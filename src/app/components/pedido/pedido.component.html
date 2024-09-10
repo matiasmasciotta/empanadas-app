@@ -1,76 +1,75 @@
-<div class="container">
+
+<div class="">
+  <div class="alert alert-primary text-center" role="alert">
+    <h5>Pedido actual</h5>
+  </div>
+
+  <!-- Sección de selección de amigo, gusto, cantidad y costos -->
+  <div class="alert alert-light" role="alert">
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">Amigo:</span>
+      <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
+        <option *ngFor="let amigo of amigos" [ngValue]="amigo">
+          {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
+        </option>
+      </select>
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon2">Gusto:</span>
+      <select class="form-select" [(ngModel)]="selectedGusto" aria-label="Seleccionar gusto">
+        <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
+      </select>
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon3">Cantidad:</span>
+      <input class="form-control" type="number" [(ngModel)]="cantidad" aria-label="Cantidad" />
+    </div>
+
+    <hr>
+    
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
+      <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
+      <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
+    </div>
+
+    <button type="button" class="btn btn-outline-dark mt-3" (click)="agregarPedido()" [disabled]="!selectedAmigo || !selectedGusto">Agregar Pedido</button>
+  </div>
+
+  <!-- Resumen del pedido -->
+  <h3 class="mt-4">Resumen del Pedido</h3>
   <div class="row">
-    <div class="col col-lg-12">
-      <div class="alert alert-primary text-center" role="alert">
-        <h3>Pedido actual</h3>
-      </div>
-
-      <!-- Sección de selección de amigo, gusto, cantidad y costos -->
-      <div class="alert alert-light" role="alert">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon1">Amigo:</span>
-          <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
-            <option *ngFor="let amigo of amigos" [ngValue]="amigo">
-              {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
-            </option>
-          </select>
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let amigo of amigos">
+      <div *ngIf="amigo.pedido.length > 0" class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          {{ amigo.nombre }}
+          <i (click)="eliminarPedido(amigo)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
         </div>
-
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon2">Gusto:</span>
-          <select class="form-select" [(ngModel)]="selectedGusto" aria-label="Seleccionar gusto">
-            <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
-          </select>
+        <div class="card-body">
+          <ul class="list-unstyled">
+            <li *ngFor="let pedido of amigo.pedido">
+              {{ pedido.cantidad }} de {{ pedido.gusto }}
+            </li>
+          </ul>
+          <p class="mb-0">Total: {{ calcularTotalEmpanadas(amigo) }} empanadas {{ calcularTotalAmigo(amigo) | currency }}</p>
+          <p class="mb-0">+ {{ calcularProporcionEnvio(amigo) | currency }} de envío</p>
         </div>
-
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon3">Cantidad:</span>
-          <input class="form-control" type="number" [(ngModel)]="cantidad" aria-label="Cantidad" />
+        <div class="card-footer text-end">
+          Total: {{ calcularTotalAmigo(amigo) + calcularProporcionEnvio(amigo) | currency }}
         </div>
-
-        <hr>
-        
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
-          <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
-        </div>
-
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
-          <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
-        </div>
-
-        <button type="button" class="btn btn-outline-info mt-3" (click)="agregarPedido()" [disabled]="!selectedAmigo || !selectedGusto">Agregar Pedido</button>
-      </div>
-
-      <!-- Resumen del pedido -->
-      <h3 class="mt-4">Resumen del Pedido</h3>
-      <div class="row">
-        <div class="col-md-6 col-lg-4 mb-3" *ngFor="let amigo of amigos">
-          <div *ngIf="amigo.pedido.length > 0" class="card border-info">
-            <div class="card-header">{{ amigo.nombre }}</div>
-            <div class="card-body">
-              <ul>
-                <li *ngFor="let pedido of amigo.pedido">
-                  {{ pedido.cantidad }} de {{ pedido.gusto }}
-                </li>
-              </ul>
-              <p>Total: {{ calcularTotalEmpanadas(amigo) }} empanadas {{ calcularTotalAmigo(amigo) | currency }}</p>
-              <p>+ {{ calcularProporcionEnvio(amigo) | currency }} de envío</p>
-            </div>
-            <div class="card-footer">
-              <button type="button" class="btn btn-outline-danger" (click)="eliminarPedido(amigo)">Eliminar Pedido</button>
-              <p>Total: {{ calcularTotalAmigo(amigo) + calcularProporcionEnvio(amigo) | currency }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="alert alert-success text-center mt-4" role="alert">
-        <p>Total de empanadas: {{ calcularTotalGeneral() }} empanadas {{ calcularTotalGeneral() | currency }}</p>
-        <p>+ {{ calcularProporcionEnvioTotal() | currency }} de envío</p>
-        <h3>Total del pedido: {{ (calcularTotalGeneral() + calcularProporcionEnvioTotal()) | currency }}</h3>
       </div>
     </div>
+  </div>
+
+  <div class="alert alert-success text-center mt-4" role="alert">
+    <p>Total de empanadas: {{ calcularTotalGeneral() }} empanadas {{ calcularTotalGeneral() | currency }}</p>
+    <p>+ {{ costoEnvio | currency }} de envío</p>
+    <h3>Total del pedido: {{ calcularTotalGeneral() + costoEnvio | currency }}</h3>
   </div>
 </div>

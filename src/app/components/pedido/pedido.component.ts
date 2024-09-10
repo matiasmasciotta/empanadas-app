@@ -100,6 +100,6 @@ export class PedidoComponent implements OnInit {
   }
 
   calcularProporcionEnvioTotal(): number {
-    return this.calcularProporcionEnvio(this.selectedAmigo || { nombre: '', pedido: [] });
+    return this.costoEnvio; // En total no se divide
   }
 }

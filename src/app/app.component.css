@@ -1,0 +1,32 @@
+/* Estilos personalizados para la barra de navegación */
+.navbar-dark .nav-link {
+    color: #bbb; /* Color para íconos no activos */
+  }
+  
+  .navbar-dark .nav-link.active {
+    color: #fff; /* Íconos y texto activos en blanco */
+  }
+  
+  .navbar-dark .nav-link.active i {
+    transform: scale(1.2); /* Efecto de agrandamiento en ícono activo */
+    transition: transform 0.3s;
+  }
+  
+  .navbar-dark .nav-link.active div {
+    font-weight: bold;
+    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.7); /* Resplandor en el texto activo */
+  }
+  
+  .navbar-dark .nav-link i {
+    transition: transform 0.3s ease;
+  }
+  
+  .navbar-dark .nav-link:hover {
+    color: #fff;
+  }
+  
+
+  .navbar {
+    height: 65px; /* Ajusta este valor a tu preferencia */
+    padding: 10px 0; /* Ajusta el padding superior e inferior */
+  }

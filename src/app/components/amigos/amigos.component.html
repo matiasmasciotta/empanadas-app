@@ -1,25 +1,49 @@
-<div>
-  <h3>Amigos Disponibles</h3>
-  <ul>
-    <li *ngFor="let amigo of amigos">
-      {{ amigo.nombre }}
-      <button (click)="openEditModal(amigo)">Editar</button>
-      <button (click)="removeAmigo(amigo.nombre)">Eliminar</button>
-    </li>
-  </ul>
-</div>
+<div class="">
+  <!-- Título de la sección -->
+  <div class="alert alert-warning text-center" role="alert">
+    <h3>Listado de Amigos</h3>
+  </div>
 
-<div>
-  <h3>Agrega un Amigo</h3>
-  <input [(ngModel)]="newAmigo.nombre" placeholder="Nombre del nuevo amigo">
-  <!-- Puedes agregar más campos si es necesario -->
-  <button (click)="addAmigo()">Agregar</button>
-</div>
+  <!-- Contenedor de tarjetas de amigos -->
+  <div class="row row-cols-2 row-cols-md-3 g-2"> <!-- Se asegura que haya 2 tarjetas por fila en pantallas pequeñas y 3 en medianas -->
+    <div class="col" *ngFor="let amigo of amigos">
+      <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
+        <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
+          <div class="icon-container mb-3" style="background: #fff3cd; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
+            <i class="bi bi-person-fill text-warning" style="font-size: 24px;"></i> <!-- Icono de amigo -->
+          </div>
+          <h5 class="card-title mb-2" style="font-size: 1rem; font-weight: 500;">{{ amigo.nombre }}</h5>
+          <p *ngIf="hasActivePedidos(amigo)" class="text-center text-success mb-3">Activo</p>
 
-<app-modal
-  *ngIf="showEditModal"
-  [title]="'Editar Amigo'"
-  [content]="editingAmigo ? editingAmigo.nombre : ''"
-  (submit)="updateAmigo({ nombre: $event, pedidos: [] })"
-  (close)="closeEditModal()">
-</app-modal>
+          <!-- Efecto degradado en el footer -->
+          <div class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
+            <!-- Iconos de edición y eliminación -->
+            <div class="d-flex justify-content-between w-100">
+              <i (click)="openEditModal(amigo)" class="bi bi-pencil-square text-secondary" style="cursor: pointer;"></i>
+              &nbsp;&nbsp;
+              <i (click)="removeAmigo(amigo.nombre)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección para agregar un nuevo amigo -->
+  <div class="alert alert-light mt-4 text-center" role="alert">
+    <h5>Agregar un Amigo</h5>
+    <div class="input-group mb-3">
+      <input [(ngModel)]="newAmigo.nombre" class="form-control" placeholder="Nombre">
+      <button class="btn btn-outline-warning" (click)="addAmigo()">Agregar</button>
+    </div>
+  </div>
+
+  <!-- Modal para editar amigo -->
+  <app-modal
+    *ngIf="showEditModal"
+    [title]="'Editar Amigo'"
+    [content]="editingAmigo ? editingAmigo.nombre : ''"
+    (submit)="updateAmigo({ nombre: $event, pedidos: [] })"
+    (close)="closeEditModal()">
+  </app-modal>
+</div>

@@ -4,20 +4,20 @@
   </div>
 </main>
 
-<!-- Navbar inferior flotante -->
-<nav class="navbar navbar-expand fixed-bottom navbar-light bg-light">
+<!-- Navbar inferior flotante con tema oscuro -->
+<nav class="navbar navbar-expand fixed-bottom navbar-dark bg-dark">
   <div class="container-fluid justify-content-around">
-    <a class="nav-link text-center" href="/agregar-gustos">
-      <i class="bi bi-patch-check fs-3"></i> <!-- Icono para gustos -->
-      <div>Gustos</div>
+    <a class="nav-link text-center" [ngClass]="{ 'active': isActive('/agregar-gustos') }" href="/agregar-gustos">
+      <i class="bi bi-patch-check fs-3" [ngClass]="{ 'text-light': isActive('/agregar-gustos') }"></i>
+      <div [ngClass]="{ 'text-light': isActive('/agregar-gustos') }">Gustos</div>
     </a>
-    <a class="nav-link text-center" href="/agregar-amigos">
-      <i class="bi bi-person fs-3"></i> <!-- Icono para amigos -->
-      <div>Amigos</div>
+    <a class="nav-link text-center" [ngClass]="{ 'active': isActive('/agregar-amigos') }" href="/agregar-amigos">
+      <i class="bi bi-person fs-3" [ngClass]="{ 'text-light': isActive('/agregar-amigos') }"></i>
+      <div [ngClass]="{ 'text-light': isActive('/agregar-amigos') }">Amigos</div>
     </a>
-    <a class="nav-link text-center" href="/pedido">
-      <i class="bi bi-shop fs-3"></i> <!-- Icono para pedido -->
-      <div>Pedido</div>
+    <a class="nav-link text-center" [ngClass]="{ 'active': isActive('/pedido') }" href="/pedido">
+      <i class="bi bi-shop fs-3" [ngClass]="{ 'text-light': isActive('/pedido') }"></i>
+      <div [ngClass]="{ 'text-light': isActive('/pedido') }">Pedido</div>
     </a>
   </div>
 </nav>

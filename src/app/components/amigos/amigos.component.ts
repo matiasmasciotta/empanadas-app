@@ -54,4 +54,9 @@ export class AmigosComponent implements OnInit {
     this.amigosService.removeAmigo(nombre);
     this.amigos = this.amigosService.getAmigos();
   }
+
+  // Nueva función para verificar si un amigo tiene pedidos activos
+  hasActivePedidos(amigo: Amigo): boolean {
+    return amigo.pedidos && amigo.pedidos.length > 0;
+  }
 }

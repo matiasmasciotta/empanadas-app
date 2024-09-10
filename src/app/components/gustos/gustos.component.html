@@ -1,20 +1,34 @@
-<div class="container">
+<div class="">
   <!-- Título de la sección -->
-  <div class="alert alert-primary text-center" role="alert">
-    <h3>Gustos Disponibles</h3>
+  <div class="alert alert-danger text-center" role="alert">
+    <h5>Listado de Gustos</h5>
   </div>
 
   <!-- Contenedor de tarjetas de gustos -->
-  <div class="row row-cols-3 g-2">
+  <div class="row row-cols-2 row-cols-md-3 g-2"> <!-- Cambiado a 3 columnas por fila en pantallas medianas -->
     <div class="col" *ngFor="let gusto of gustos">
-      <div class="card border-secondary d-flex flex-column align-items-center">
-        <div class="card-body text-center d-flex flex-column justify-content-between">
-          <i class="bi bi-cup-straw" style="font-size: 24px;"></i> <!-- Icono de comida -->
-          <p class="card-text" style="font-size: 0.65rem; margin: 0;">{{ gusto }}</p>
-          <div class="d-flex justify-content-between mt-2">
-            <i *ngIf="!defaultGustos.includes(gusto)" (click)="openEditModal(gusto)" class="bi bi-pencil" style="cursor: pointer;"></i>
-            <i *ngIf="!defaultGustos.includes(gusto)" (click)="removeGusto(gusto)" class="bi bi-trash" style="cursor: pointer;"></i>
+      <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
+        <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
+          <div class="icon-container mb-3" style="background: #f8d7da; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
+            <i class="bi bi-egg-fried text-danger" style="font-size: 24px;"></i> <!-- Icono de comida -->
           </div>
+          <p class="card-text mb-2" style="font-size: 0.7rem; font-weight: 500;">{{ gusto }}</p>
+
+        <!-- Efecto degradado en el footer -->
+        <div *ngIf="!defaultGustos.includes(gusto)" class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
+           <!-- Iconos de edición y eliminación -->
+           <div class="d-flex justify-content-between w-100">
+            <i 
+               (click)="openEditModal(gusto)" 
+               class="bi bi-pencil-square text-secondary" 
+               style="cursor: pointer;"></i>
+               &nbsp;&nbsp;
+            <i 
+               (click)="removeGusto(gusto)" 
+               class="bi bi-trash text-danger" 
+               style="cursor: pointer;"></i>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -25,7 +39,7 @@
     <h5>Agrega un gusto</h5>
     <div class="input-group mb-3">
       <input [(ngModel)]="newGusto" class="form-control" placeholder="Nombre">
-      <button class="btn btn-success" (click)="addGusto()">Agregar</button>
+      <button class="btn btn-outline-danger" (click)="addGusto()">Agregar</button>
     </div>
   </div>
 
