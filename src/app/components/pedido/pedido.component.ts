@@ -26,6 +26,7 @@ export class PedidoComponent implements OnInit {
   selectedGusto: string | null = null;
   cantidad: number = 1;
   costoPorEmpanada: number = 1800; // Input editable para el costo de empanadas
+  costoEnvio: number = 4000; // Input editable para el costo de envío
 
   ngOnInit() {
     const gustosGuardados = localStorage.getItem('gustos');
@@ -64,19 +65,34 @@ export class PedidoComponent implements OnInit {
     }
   }
 
-  calcularTotalAmigo(amigo: Amigo): number {
-    // Validación para asegurar que pedido siempre sea un array
-    if (!amigo.pedido) {
+  eliminarPedido(amigo: Amigo) {
+    if (amigo) {
       amigo.pedido = [];
+      localStorage.setItem('amigos', JSON.stringify(this.amigos));
     }
+  }
 
+  calcularTotalAmigo(amigo: Amigo): number {
     return amigo.pedido.reduce((total, item) => total + item.cantidad * this.costoPorEmpanada, 0);
   }
 
+  calcularTotalEmpanadas(amigo: Amigo): number {
+    return amigo.pedido.reduce((total, item) => total + item.cantidad, 0);
+  }
+
   calcularTotalGeneral(): number {
-    // Solo contar amigos que tengan al menos un pedido
     return this.amigos
       .filter(amigo => amigo.pedido.length > 0)
       .reduce((total, amigo) => total + this.calcularTotalAmigo(amigo), 0);
+  }
+
+  calcularProporcionEnvio(amigo: Amigo): number {
+    const cantidadConPedidos = this.amigos.filter(a => a.pedido.length > 0).length;
+    const proporcionEnvio = cantidadConPedidos > 0 ? this.costoEnvio / cantidadConPedidos : 0;
+    return proporcionEnvio;
+  }
+
+  calcularProporcionEnvioTotal(): number {
+    return this.calcularProporcionEnvio(this.selectedAmigo || { nombre: '', pedido: [] });
   }
 }
