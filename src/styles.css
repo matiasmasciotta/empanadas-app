@@ -1,1 +1,38 @@
-/* You can add global styles to this file, and also import other style files */
+/* Asegúrate de que el main ocupe todo el alto de la pantalla menos el alto de la navbar */
+body, html {
+    height: 100%;
+    margin: 0;
+  }
+  
+  main {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 56px); /* Ajusta si la altura de la navbar cambia */
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  
+  .navbar {
+    height: 56px; /* Ajusta la altura de la navbar si es necesario */
+  }
+  
+  .nav-link {
+    text-align: center;
+    padding: 0.5rem 1rem;
+  }
+  
+  .nav-link i {
+    display: block;
+  }
+  
+  .nav-link div {
+    font-size: 0.9rem;
+  }
+  
+  @media (min-width: 992px) {
+    /* Ajustes para escritorio si es necesario */
+    .navbar {
+      display: none; /* Oculta la navbar en pantallas grandes si lo prefieres */
+    }
+  }
+  
