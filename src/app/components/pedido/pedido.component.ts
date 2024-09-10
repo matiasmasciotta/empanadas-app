@@ -86,6 +86,11 @@ export class PedidoComponent implements OnInit {
     return amigo.pedido.reduce((total, item) => total + item.cantidad, 0);
   }
 
+  calcularTotalEmpanadasTodos(): number {
+    // Suma la cantidad total de empanadas de todos los amigos
+    return this.amigos.reduce((total, amigo) => total + this.calcularTotalEmpanadas(amigo), 0);
+  }
+
   calcularTotalGeneral(): number {
     // Solo contar amigos que tengan al menos un pedido
     return this.amigos
@@ -101,5 +106,33 @@ export class PedidoComponent implements OnInit {
 
   calcularProporcionEnvioTotal(): number {
     return this.costoEnvio; // En total no se divide
+  }
+
+  incrementarCantidad() {
+    this.cantidad += 1;
+  }
+
+  decrementarCantidad() {
+    if (this.cantidad > 1) {
+      this.cantidad -= 1;
+    }
+  }
+
+  // Agregar al final del archivo .ts
+  calcularTotalGustos(): { [gusto: string]: number } {
+    const totalGustos: { [gusto: string]: number } = {};
+
+    // Recorrer todos los amigos y sus pedidos
+    this.amigos.forEach(amigo => {
+      amigo.pedido.forEach(pedido => {
+        if (totalGustos[pedido.gusto]) {
+          totalGustos[pedido.gusto] += pedido.cantidad;
+        } else {
+          totalGustos[pedido.gusto] = pedido.cantidad;
+        }
+      });
+    });
+
+    return totalGustos;
   }
 }

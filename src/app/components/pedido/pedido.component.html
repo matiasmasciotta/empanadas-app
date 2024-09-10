@@ -29,22 +29,29 @@
     </div>
 
     <!-- Fila para cantidad, costo de empanada y costo de envío -->
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon3">Cantidad:</span>
-          <input class="form-control" type="number" [(ngModel)]="cantidad" aria-label="Cantidad" />
-        </div>
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-4 d-flex align-items-center">
+        <span class="input-group-text" id="basic-addon3">Cantidad:</span>
+        &nbsp;
+        <button type="button" class="btn btn-outline-secondary" (click)="decrementarCantidad()">
+          <i class="bi bi-dash"></i>
+        </button>
+        <span class="mx-2">{{ cantidad }}</span>
+        <button type="button" class="btn btn-outline-secondary" (click)="incrementarCantidad()">
+          <i class="bi bi-plus"></i>
+        </button>
       </div>
-
-      <div class="col-md-6 col-sm-6">
+      <div>
+        <hr>
+      </div>
+      <div class="col-md-4">
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
           <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
         </div>
       </div>
 
-      <div class="col-md-6 col-sm-6">
+      <div class="col-md-4">
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
           <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
@@ -80,9 +87,19 @@
     </div>
   </div>
 
-  <div class="alert alert-success text-center mt-4" role="alert">
-    <p>Total de empanadas: {{ calcularTotalGeneral() }} empanadas {{ calcularTotalGeneral() | currency }}</p>
-    <p>+ {{ costoEnvio | currency }} de envío</p>
+  <!-- Resumen de gustos -->
+  <div class="alert alert-info mt-4" role="alert">
+    <h5>Resumen de Gustos</h5>
+    <ul class="list-unstyled">
+      <li *ngFor="let gusto of (calcularTotalGustos() | keyvalue)">
+        {{ gusto.key }}: {{ gusto.value }} unidades
+      </li>
+    </ul>
+  </div>
+
+  <div class="alert alert-success mt-4" role="alert">
+    <p>Cantidad de empanadas: {{ calcularTotalEmpanadasTodos() }} u.</p>
+    <p>Costo de envío: {{ costoEnvio | currency }} de envío</p>
     <h3>Total del pedido: {{ calcularTotalGeneral() + costoEnvio | currency }}</h3>
   </div>
 </div>
