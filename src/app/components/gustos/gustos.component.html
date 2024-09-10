@@ -14,21 +14,21 @@
           </div>
           <p class="card-text mb-2" style="font-size: 0.7rem; font-weight: 500;">{{ gusto }}</p>
 
-        <!-- Efecto degradado en el footer -->
-        <div *ngIf="!defaultGustos.includes(gusto)" class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
-           <!-- Iconos de edición y eliminación -->
-           <div class="d-flex justify-content-between w-100">
-            <i 
-               (click)="openEditModal(gusto)" 
-               class="bi bi-pencil-square text-secondary" 
-               style="cursor: pointer;"></i>
-               &nbsp;&nbsp;
-            <i 
-               (click)="removeGusto(gusto)" 
-               class="bi bi-trash text-danger" 
-               style="cursor: pointer;"></i>
+          <!-- Efecto degradado en el footer -->
+          <div *ngIf="!defaultGustos.includes(gusto)" class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
+            <!-- Iconos de edición y eliminación -->
+            <div class="d-flex justify-content-between w-100">
+              <i 
+                 (click)="openEditModal(gusto)" 
+                 class="bi bi-pencil-square text-secondary" 
+                 style="cursor: pointer;"></i>
+              &nbsp;&nbsp;
+              <i 
+                 (click)="removeGusto(gusto)" 
+                 class="bi bi-trash text-danger" 
+                 style="cursor: pointer;"></i>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

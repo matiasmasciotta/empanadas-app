@@ -1,9 +1,18 @@
-<div class="modal-overlay">
+<!-- Modal Structure -->
+<div class="modal fade" id="customModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <h2>{{ title }}</h2>
-      <input [(ngModel)]="newValue" placeholder="Nuevo valor">
-      <button (click)="onSubmit()">Aceptar</button>
-      <button (click)="onClose()">Cancelar</button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">{{ title }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="onClose()"></button>
+      </div>
+      <div class="modal-body">
+        <input class="form-control" [(ngModel)]="newValue" placeholder="Nuevo valor" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="onSubmit()">Aceptar</button>
+      </div>
     </div>
   </div>
-  
+</div>
