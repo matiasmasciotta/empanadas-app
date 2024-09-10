@@ -1,4 +1,3 @@
-
 <div class="">
   <div class="alert alert-primary text-center" role="alert">
     <h5>Pedido actual</h5>
@@ -6,37 +5,51 @@
 
   <!-- Sección de selección de amigo, gusto, cantidad y costos -->
   <div class="alert alert-light" role="alert">
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon1">Amigo:</span>
-      <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
-        <option *ngFor="let amigo of amigos" [ngValue]="amigo">
-          {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
-        </option>
-      </select>
+    <!-- Fila para seleccionar amigo y gusto -->
+    <div class="row mb-3">
+      <div class="col-md-6 col-sm-6">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon1">Amigo:</span>
+          <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
+            <option *ngFor="let amigo of amigos" [ngValue]="amigo">
+              {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-sm-6">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon2">Gusto:</span>
+          <select class="form-select" [(ngModel)]="selectedGusto" aria-label="Seleccionar gusto">
+            <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon2">Gusto:</span>
-      <select class="form-select" [(ngModel)]="selectedGusto" aria-label="Seleccionar gusto">
-        <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
-      </select>
-    </div>
+    <!-- Fila para cantidad, costo de empanada y costo de envío -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon3">Cantidad:</span>
+          <input class="form-control" type="number" [(ngModel)]="cantidad" aria-label="Cantidad" />
+        </div>
+      </div>
 
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon3">Cantidad:</span>
-      <input class="form-control" type="number" [(ngModel)]="cantidad" aria-label="Cantidad" />
-    </div>
+      <div class="col-md-6 col-sm-6">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
+          <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
+        </div>
+      </div>
 
-    <hr>
-    
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
-      <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
-    </div>
-
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
-      <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
+      <div class="col-md-6 col-sm-6">
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
+          <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
+        </div>
+      </div>
     </div>
 
     <button type="button" class="btn btn-outline-dark mt-3" (click)="agregarPedido()" [disabled]="!selectedAmigo || !selectedGusto">Agregar Pedido</button>
