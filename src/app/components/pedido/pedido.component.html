@@ -1,8 +1,45 @@
-<!-- Contenido del componente Pedido -->
-<div *ngFor="let empanada of empanadas">
-  <span>{{ empanada.nombre }}</span>
-  <button (click)="agregarEmpanada(empanada.nombre)">Agregar</button>
+<div class="col-lg-12 text-center">
+  <h3>Pedido actual</h3> 
+  <div>
+    <label>Seleccionar amigo:</label>
+    <select [(ngModel)]="selectedAmigo">
+      <option *ngFor="let amigo of amigos" [ngValue]="amigo">{{ amigo.nombre }}</option>
+    </select>
+  </div>
+  
+  <div>
+    <label>Seleccionar gusto:</label>
+    <select [(ngModel)]="selectedGusto">
+      <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
+    </select>
+  </div>
+  
+  <div>
+    <label>Cantidad:</label>
+    <input type="number" [(ngModel)]="cantidad" />
+  </div>
+
+  <div>
+    <label for="costoEmpanada">Costo de empanada:</label>
+    <input id="costoEmpanada" type="number" [(ngModel)]="costoPorEmpanada" />
+  </div>
+  
+  <button (click)="agregarPedido()">Agregar Pedido</button>
+  
+  <h3>Resumen del Pedido</h3>
+  <div *ngFor="let amigo of amigos">
+    <div *ngIf="amigo.pedido.length > 0">
+      <h4>{{ amigo.nombre }}</h4>
+      <ul>
+        <li *ngFor="let pedido of amigo.pedido">
+          {{ pedido.cantidad }} de {{ pedido.gusto }}
+        </li>
+      </ul>
+      <p>Total: {{ calcularTotalAmigo(amigo) | currency }}</p>
+    </div>
+  </div>
+  
+  <h3>Total de Pedido: {{ calcularTotalGeneral() | currency }}</h3>
+
+  
 </div>
-<button (click)="guardarPedido()">Guardar Pedido</button>
-<!-- Botón para volver al home -->
-<a class="pill" routerLink="/">Volver al Home</a>
