@@ -12,7 +12,8 @@
           <span class="input-group-text" id="basic-addon1">Amigo:</span>
           <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
             <option *ngFor="let amigo of amigos" [ngValue]="amigo">
-              {{ amigo.nombre }} <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
+              {{ amigo.nombre }} 
+              <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
             </option>
           </select>
         </div>
@@ -74,7 +75,18 @@
         <div class="card-body">
           <ul class="list-unstyled">
             <li *ngFor="let pedido of amigo.pedido">
-              {{ pedido.cantidad }} de {{ pedido.gusto }}
+              <ng-container *ngIf="pedido.cantidad >= 0">
+                {{ pedido.gusto }}:
+                <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="decrementarGustoCantidad(amigo, pedido)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <span class="mx-2">{{ pedido.cantidad }}</span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="incrementarGustoCantidad(amigo, pedido)">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </ng-container>
             </li>
           </ul>
           <p class="mb-0">Total: {{ calcularTotalEmpanadas(amigo) }} empanadas {{ calcularTotalAmigo(amigo) | currency }}</p>
@@ -88,20 +100,20 @@
   </div>
 
   <!-- Resumen de gustos -->
-  <div class="alert alert-info mt-4" role="alert">
-    <h5>Resumen de Gustos</h5>
-    <ul class="list-unstyled">
-      <li *ngFor="let gusto of (calcularTotalGustos() | keyvalue)">
-        {{ gusto.key }}: {{ gusto.value }} unidades
-      </li>
-    </ul>
-  </div>
+<div class="alert alert-info mt-4" role="alert">
+  <h5>Resumen de Gustos</h5>
+  <ul class="list-unstyled">
+    <li *ngFor="let gusto of (calcularTotalGustos() | keyvalue)">
+      {{ gusto.key }}: {{ gusto.value }} unidades
+    </li>
+  </ul>
+</div>
 
-  <div class="alert alert-success mt-4" role="alert">
-    <p>Cantidad de empanadas: {{ calcularTotalEmpanadasTodos() }} u.</p>
-    <p>Costo de envío: {{ costoEnvio | currency }} de envío</p>
-    <h3>Total del pedido: {{ calcularTotalGeneral() + costoEnvio | currency }}</h3>
-  </div>
+<div class="alert alert-success mt-4" role="alert">
+  <p>Cantidad de empanadas: {{ calcularTotalEmpanadasTodos() }} u.</p>
+  <p>Costo de envío: {{ costoEnvio | currency }} de envío</p>
+  <h3>Total del pedido: {{ calcularTotalGeneral() + costoEnvio | currency }}</h3>
+</div>
   <hr>
   <small>made with love by <b>github.com/matiasmasciotta</b> developer</small>
 </div>

@@ -86,9 +86,18 @@ export class PedidoComponent implements OnInit {
     return amigo.pedido.reduce((total, item) => total + item.cantidad, 0);
   }
 
-  calcularTotalEmpanadasTodos(): number {
-    // Suma la cantidad total de empanadas de todos los amigos
-    return this.amigos.reduce((total, amigo) => total + this.calcularTotalEmpanadas(amigo), 0);
+  calcularTotalEmpanadasTodos() {
+    let totalEmpanadas = 0;
+    
+    this.amigos.forEach(amigo => {
+      amigo.pedido.forEach(pedido => {
+        if (pedido.cantidad > 0) {
+          totalEmpanadas += pedido.cantidad;
+        }
+      });
+    });
+    
+    return totalEmpanadas;
   }
 
   calcularTotalGeneral(): number {
@@ -109,30 +118,45 @@ export class PedidoComponent implements OnInit {
   }
 
   incrementarCantidad() {
-    this.cantidad += 1;
-  }
+    this.cantidad++;
+  }  
 
   decrementarCantidad() {
-    if (this.cantidad > 1) {
-      this.cantidad -= 1;
+    if (this.cantidad > 0) {
+      this.cantidad--;
     }
   }
 
   // Agregar al final del archivo .ts
-  calcularTotalGustos(): { [gusto: string]: number } {
-    const totalGustos: { [gusto: string]: number } = {};
-
-    // Recorrer todos los amigos y sus pedidos
+  calcularTotalGustos() {
+    const totalGustos: { [key: string]: number } = {};
+    
     this.amigos.forEach(amigo => {
       amigo.pedido.forEach(pedido => {
-        if (totalGustos[pedido.gusto]) {
-          totalGustos[pedido.gusto] += pedido.cantidad;
-        } else {
-          totalGustos[pedido.gusto] = pedido.cantidad;
+        if (pedido.cantidad > 0) {  // Solo contar gustos con cantidad mayor a 0
+          if (totalGustos[pedido.gusto]) {
+            totalGustos[pedido.gusto] += pedido.cantidad;
+          } else {
+            totalGustos[pedido.gusto] = pedido.cantidad;
+          }
         }
       });
     });
-
+    
     return totalGustos;
+  }
+
+  incrementarGustoCantidad(amigo: any, pedido: any) {
+    pedido.cantidad++;
+  }
+  
+  decrementarGustoCantidad(amigo: any, pedido: any) {
+    if (pedido.cantidad > 0) {
+      pedido.cantidad--;
+    }
+  }
+
+  actualizarLocalStorage() {
+    localStorage.setItem('amigos', JSON.stringify(this.amigos));
   }
 }
