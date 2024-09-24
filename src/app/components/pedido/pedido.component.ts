@@ -22,15 +22,15 @@ interface Pedido {
 export class PedidoComponent implements OnInit {
   amigos: Amigo[] = [];
   gustos: string[] = [];
-  historial: Historial = { fechaPedido: new Date(), pedido: [] };
   selectedAmigo: Amigo | null = null;
   selectedGusto: string | null = null;
   cantidad: number = 1;
   costoPorEmpanada: number = 1800; // Input editable para el costo de empanadas
   costoEnvio: number = 4000; // Input editable para el costo de envío
-
   totalEmpanadas: number = 0;
   fechaPedido: any;
+
+  historial: Historial = { fechaPedido: new Date(), pedido: [], costoEmpanada: this.costoPorEmpanada, costoEnvio: this.costoEnvio };
 
   ngOnInit() {
     const gustosGuardados = localStorage.getItem('gustos');
@@ -167,7 +167,9 @@ export class PedidoComponent implements OnInit {
   confirmarPedido() {
     this.historial = {
       fechaPedido: new Date(),
-      pedido: this.amigos
+      pedido: this.amigos,
+      costoEmpanada: this.costoPorEmpanada,
+      costoEnvio: this.costoEnvio
     };
   
     let actualHistorial = localStorage.getItem('historial');
@@ -189,7 +191,7 @@ export class PedidoComponent implements OnInit {
   resetData() {
     this.amigos = [];
     this.gustos = [];
-    this.historial = { fechaPedido: new Date(), pedido: [] }; // Inicializa correctamente
+    this.historial = { fechaPedido: new Date(), pedido: [], costoEmpanada: this.costoPorEmpanada, costoEnvio: this.costoEnvio }; // Inicializa correctamente
     this.selectedAmigo = null;
     this.selectedGusto = null;
     this.cantidad = 1;  // Cambié esto a 1 ya que puede ser confuso empezar con 0

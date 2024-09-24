@@ -3,7 +3,9 @@
 export class Historial {
     constructor(
         public fechaPedido: Date,
-        public pedido: Amigo[]
+        public pedido: Amigo[],
+        public costoEmpanada: number,
+        public costoEnvio: number
     ) {}
 }
 

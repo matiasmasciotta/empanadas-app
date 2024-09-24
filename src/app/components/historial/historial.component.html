@@ -1,1 +1,42 @@
-<h1>hola historial</h1>
+<div class="">
+    <div class="alert alert-danger text-center" role="alert">
+        <h5>Historial de pedidos</h5>
+      </div>
+    
+    <div *ngFor="let item of historial; let i = index" class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center" (click)="togglePanel(i)" style="cursor: pointer;">
+        <div>
+          <strong>Pedido: {{ item.fechaPedido | date:'dd/MM/yyyy, HH:mm' }}</strong>
+        </div>
+        <div>
+          <strong>Total Empanadas: {{ calcularTotalEmpanadas(item.pedido) }}</strong> 
+          - <strong>Total Pedido: ${{ calcularTotalPedido(item) | number }}</strong>
+          <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi ml-2"></i>
+        </div>
+      </div>
+  
+      <div *ngIf="panelOpenState[i]" class="collapse show">
+        <div class="card-body">
+          <div *ngFor="let amigo of item.pedido">
+            <h5>{{ amigo.nombre }}</h5>
+            <ul>
+              <li *ngFor="let pedido of amigo.pedido">
+                {{ pedido.cantidad }} de {{ pedido.gusto }}
+              </li>
+            </ul>
+            <div>
+              Total Empanadas: {{ calcularTotalEmpanadasAmigo(amigo) }} 
+              <br>
+              Costo de empanadas: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}
+              <br>
+              Costo de envío: ${{ calcularCostoEnvioAmigo(item) | number }}
+              <br>
+              Total amigo: ${{ calcularTotalAmigo(amigo, item) | number }}
+            </div>
+            <hr>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
