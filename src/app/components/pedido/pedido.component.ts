@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; // Importar CommonModule
-import { FormsModule } from '@angular/forms'; // Necesario para [(ngModel)]
+import { FormsModule } from '@angular/forms'; // Necesario para [(ngModel)]voy
+import { Historial } from '../../models/historial';
 
 interface Amigo {
   nombre: string;
@@ -11,7 +12,6 @@ interface Pedido {
   gusto: string;
   cantidad: number;
 }
-
 @Component({
   selector: 'app-pedido',
   standalone: true, // Si estás usando componentes independientes
@@ -22,11 +22,15 @@ interface Pedido {
 export class PedidoComponent implements OnInit {
   amigos: Amigo[] = [];
   gustos: string[] = [];
+  historial: Historial = { fechaPedido: new Date(), pedido: [] };
   selectedAmigo: Amigo | null = null;
   selectedGusto: string | null = null;
   cantidad: number = 1;
   costoPorEmpanada: number = 1800; // Input editable para el costo de empanadas
   costoEnvio: number = 4000; // Input editable para el costo de envío
+
+  totalEmpanadas: number = 0;
+  fechaPedido: any;
 
   ngOnInit() {
     const gustosGuardados = localStorage.getItem('gustos');
@@ -158,5 +162,41 @@ export class PedidoComponent implements OnInit {
 
   actualizarLocalStorage() {
     localStorage.setItem('amigos', JSON.stringify(this.amigos));
+  }
+
+  confirmarPedido() {
+    this.historial = {
+      fechaPedido: new Date(),
+      pedido: this.amigos
+    };
+  
+    let actualHistorial = localStorage.getItem('historial');
+  
+    // Verifica si 'actualHistorial' es null antes de intentar parsearlo
+    let arrayHistorial: Historial[] = actualHistorial ? JSON.parse(actualHistorial) : [];
+  
+    // Agrega el historial actual al array
+    arrayHistorial.push(this.historial);
+  
+    // Actualiza el localStorage con el nuevo historial
+    localStorage.setItem('historial', JSON.stringify(arrayHistorial));
+  
+    console.log(this.historial);
+  
+    this.resetData();
+  }
+
+  resetData() {
+    this.amigos = [];
+    this.gustos = [];
+    this.historial = { fechaPedido: new Date(), pedido: [] }; // Inicializa correctamente
+    this.selectedAmigo = null;
+    this.selectedGusto = null;
+    this.cantidad = 1;  // Cambié esto a 1 ya que puede ser confuso empezar con 0
+    this.costoPorEmpanada = 1800;
+    this.costoEnvio = 4000;
+  
+    this.totalEmpanadas = 0;
+    this.fechaPedido = new Date();
   }
 }
