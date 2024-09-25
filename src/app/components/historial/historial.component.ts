@@ -70,15 +70,42 @@ export class HistorialComponent implements OnInit {
   }
 
   // Calcula el costo de envío por amigo
-  calcularCostoEnvioAmigo(historialItem: Historial): number {
-    const amigosConPedidos = historialItem.pedido.filter(a => a.pedido.length > 0).length;
-    return amigosConPedidos > 0 ? historialItem.costoEnvio / amigosConPedidos : 0;
-  }
+  calcularCostoEnvioAmigo(item: Historial): number {
+    const cantidadAmigosConPedidos = item.pedido.filter(amigo => amigo.pedido.length > 0).length;
+    const costoEnvioTotal = item.costoEnvio;
+
+    return cantidadAmigosConPedidos > 0 ? costoEnvioTotal / cantidadAmigosConPedidos : 0; // Divide el costo total de envío entre los amigos que tienen pedidos
+}
+
 
   // Calcula el total que debe pagar un amigo (empanadas + envío)
-  calcularTotalAmigo(amigo: Amigo, historialItem: Historial): number {
-    const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, historialItem);
-    const costoEnvioAmigo = this.calcularCostoEnvioAmigo(historialItem);
-    return costoEmpanadas + costoEnvioAmigo;
+  calcularTotalAmigo(amigo: any, item: any): number {
+    const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, item);
+    const costoEnvio = this.calcularCostoEnvioAmigo(item);
+    
+    return costoEmpanadas + costoEnvio; // Suma el costo de empanadas y el costo de envío
+}
+
+
+  // Verifica si algún amigo tiene pedidos activos en el historial completo
+  hayPedidosActivos(): boolean {
+    return this.historial.some(item => item.pedido.some(amigo => amigo.pedido.length > 0));
   }
+
+  // Verifica si un historial tiene amigos con pedidos activos
+  hayPedidosActivosItem(item: Historial): boolean {
+    return item.pedido.some(amigo => amigo.pedido.length > 0);
+  }
+
+  calcularTotalSinEnvio(item: Historial): number {
+    return item.pedido.reduce((total, amigo) => {
+      return total + amigo.pedido.reduce((subTotal, pedido) => subTotal + pedido.cantidad * item.costoEmpanada, 0);
+    }, 0);
+  }
+
+  calcularTotalConEnvio(item: Historial): number {
+    const totalSinEnvio = this.calcularTotalSinEnvio(item);
+    return totalSinEnvio + item.costoEnvio;
+  }
+  
 }
