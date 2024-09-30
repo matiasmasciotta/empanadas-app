@@ -4,12 +4,14 @@
     <h5>Listado de Gustos</h5>
   </div>
 
-  <!-- Contenedor de tarjetas de gustos -->
+  <!-- Contenedor de tarjetas de gustos con animación -->
   <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-lg-6 g-2">
     <div class="col" *ngFor="let gusto of gustos">
-      <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
+      <div class="card h-100 border-0 shadow-sm animate-card" 
+           style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
-          <div class="icon-container mb-3" style="background: #f8d7da; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
+          <div class="icon-container mb-3" 
+               style="background: #f8d7da; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
             <i class="bi bi-egg-fried text-danger" style="font-size: 24px;"></i> <!-- Icono de comida -->
           </div>
           <p class="card-text mb-2" style="font-size: 0.7rem; font-weight: 500;">{{ gusto }}</p>
@@ -42,6 +44,9 @@
       <button class="btn btn-outline-danger" (click)="addGusto()">Agregar</button>
     </div>
   </div>
+
+  <br>
+  <br>
 
   <!-- Modal para editar gusto -->
   <app-modal

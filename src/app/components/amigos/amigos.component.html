@@ -5,7 +5,7 @@
   </div>
 
   <!-- Contenedor de tarjetas de amigos -->
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-lg-6 g-2">
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-lg-6 g-2 animate-card">
     <div class="col" *ngFor="let amigo of amigos">
       <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
@@ -30,13 +30,16 @@
   </div>
 
   <!-- Sección para agregar un nuevo amigo -->
-  <div class="alert alert-light mt-4 text-center" role="alert">
+  <div class="alert alert-light mt-4 text-center animate-card" role="alert">
     <h5>Agregar un Amigo</h5>
     <div class="input-group mb-3">
       <input [(ngModel)]="newAmigo.nombre" class="form-control" placeholder="Nombre">
       <button class="btn btn-outline-warning" (click)="addAmigo()">Agregar</button>
     </div>
   </div>
+
+  <br>
+  <br>
 
   <!-- Modal para editar amigo -->
   <app-modal
