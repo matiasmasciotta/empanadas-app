@@ -26,7 +26,7 @@ export class PedidoComponent implements OnInit {
   selectedGusto: string | null = null;
   cantidad: number = 1;
   costoPorEmpanada: number = 1800; // Input editable para el costo de empanadas
-  costoEnvio: number = 4000; // Input editable para el costo de envío
+  costoEnvio: number = 0; // Input editable para el costo de envío
   totalEmpanadas: number = 0;
   fechaPedido: any;
 
@@ -35,6 +35,8 @@ export class PedidoComponent implements OnInit {
   ngOnInit() {
     const gustosGuardados = localStorage.getItem('gustos');
     const amigosGuardados = localStorage.getItem('amigos');
+    this.costoPorEmpanada = Number(localStorage.getItem('costoPorEmpanada')) || 0;
+    this.costoEnvio = Number (localStorage.getItem('costoEnvio')) || 0;
   
     if (gustosGuardados) {
       this.gustos = JSON.parse(gustosGuardados);
@@ -57,6 +59,14 @@ export class PedidoComponent implements OnInit {
         { nombre: 'Sara', pedido: [] }
       ];
     }
+  }
+
+  SetCostoEmpanada(value: number) {
+    localStorage.setItem("costoPorEmpanada", value.toString())
+  }
+
+  SetCostoEnvio(value: number){
+    localStorage.setItem("costoEnvio", value.toString())
   }
 
   agregarPedido() {
@@ -195,8 +205,6 @@ export class PedidoComponent implements OnInit {
     this.selectedAmigo = null;
     this.selectedGusto = null;
     this.cantidad = 1;  // Cambié esto a 1 ya que puede ser confuso empezar con 0
-    this.costoPorEmpanada = 1800;
-    this.costoEnvio = 4000;
   
     this.totalEmpanadas = 0;
     this.fechaPedido = new Date();

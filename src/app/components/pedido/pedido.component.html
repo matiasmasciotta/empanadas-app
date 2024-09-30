@@ -48,14 +48,14 @@
       <div class="col-md-4">
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
-          <input id="costoEmpanada" class="form-control" type="number" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
+          <input id="costoEmpanada" class="form-control" type="number" (ngModelChange)="SetCostoEmpanada($event)" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
         </div>
       </div>
 
       <div class="col-md-4">
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
-          <input id="costoEnvio" class="form-control" type="number" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
+          <input id="costoEnvio" class="form-control" type="number" (ngModelChange)="SetCostoEnvio($event)" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
         </div>
       </div>
     </div>
