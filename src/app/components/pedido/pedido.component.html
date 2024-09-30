@@ -76,12 +76,12 @@
           <ul class="list-unstyled">
             <li *ngFor="let pedido of amigo.pedido">
               <ng-container *ngIf="pedido.cantidad >= 0">
-                {{ pedido.gusto }}:
+                
                 <div class="d-flex align-items-center">
+                  {{ pedido.gusto }} x<span class="mx-2">{{ pedido.cantidad }}</span>
                   <button type="button" class="btn btn-sm btn-outline-secondary" (click)="decrementarGustoCantidad(amigo, pedido)">
                     <i class="bi bi-dash"></i>
                   </button>
-                  <span class="mx-2">{{ pedido.cantidad }}</span>
                   <button type="button" class="btn btn-sm btn-outline-secondary" (click)="incrementarGustoCantidad(amigo, pedido)">
                     <i class="bi bi-plus"></i>
                   </button>
@@ -89,7 +89,7 @@
               </ng-container>
             </li>
           </ul>
-          <p class="mb-0">Total: {{ calcularTotalEmpanadas(amigo) }} empanadas {{ calcularTotalAmigo(amigo) | currency }}</p>
+          <p class="mb-0">Cantidad: {{ calcularTotalEmpanadas(amigo) }} empanadas. {{ calcularTotalAmigo(amigo) | currency }}</p>
           <p class="mb-0">+ {{ calcularProporcionEnvio(amigo) | currency }} de envío</p>
         </div>
         <div class="card-footer text-end">

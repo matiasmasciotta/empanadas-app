@@ -37,26 +37,34 @@
             <div *ngIf="panelOpenState[i]" class="collapse show">
                 <div class="card-body">
                     <ng-container *ngFor="let amigo of item.pedido">
-                        <div *ngIf="amigo.pedido.length > 0">
-                            <h5>{{ amigo.nombre }}</h5>
-                            <ul>
-                                <li *ngFor="let pedido of amigo.pedido">
-                                    {{ pedido.cantidad }} de {{ pedido.gusto }}
-                                </li>
-                            </ul>
-                            <div>
-                                <small>Cantidad de empanadas: {{ calcularTotalEmpanadasAmigo(amigo) }}</small> 
-                                <br>
-                                <small>Costo por unidad: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</small>
-                                <br>
-                                <small>Costo de envío: ${{ calcularCostoEnvioAmigo(item) | number }}</small>
-                                <br>
-                                <b><i>Total a pagar: ${{ calcularTotalAmigo(amigo, item) | number }}</i> </b>
-                            </div>
-                            <hr>
+                      <div *ngIf="amigo.pedido.length > 0">
+                        <h5>{{ amigo.nombre }}</h5>
+                        <ul>
+                          <li *ngFor="let pedido of amigo.pedido">
+                            {{ pedido.cantidad }} de {{ pedido.gusto }}
+                          </li>
+                        </ul>
+                        <div>
+                          <small>Cantidad: {{ calcularTotalEmpanadasAmigo(amigo) }} empanadas x ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</small>
+                          <br>
+                          <small>Costo de envío: ${{ calcularCostoEnvioAmigo(item) | number }}</small>
+                          <br>
+                          <b><i>Total a pagar: ${{ calcularTotalAmigo(amigo, item) | number }}</i> </b>
                         </div>
+                        <hr>
+                      </div>
                     </ng-container>
-                </div>
+                  
+                    <!-- Resumen de pedido -->
+                    <div class="alert alert-info mt-3">
+                      <h6>Resumen de pedido:</h6>
+                      <ul>
+                        <li *ngFor="let resumen of calcularResumenGustos(item)">
+                          {{ resumen.cantidad }} de {{ resumen.gusto }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
             </div>
         </div>
 

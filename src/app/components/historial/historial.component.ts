@@ -117,5 +117,27 @@ export class HistorialComponent implements OnInit {
     localStorage.setItem('historial', JSON.stringify(this.historial));
   }
 
+
+
+  // Calcula el resumen de gustos y sus cantidades en el pedido
+calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
+  const resumen: { [gusto: string]: number } = {};
+
+  item.pedido.forEach(amigo => {
+    amigo.pedido.forEach(p => {
+      if (resumen[p.gusto]) {
+        resumen[p.gusto] += p.cantidad;
+      } else {
+        resumen[p.gusto] = p.cantidad;
+      }
+    });
+  });
+
+  // Convertimos el objeto en un array de gustos y cantidades
+  return Object.keys(resumen).map(gusto => ({
+    gusto: gusto,
+    cantidad: resumen[gusto]
+  }));
+}
   
 }
