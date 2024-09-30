@@ -26,13 +26,23 @@
                     <strong style="font-size: larger;">Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
                     <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi ml-2"></i>
                 </div>
-                
-                    
             
+                <!-- Botón para eliminar el historial -->
                 <button (click)="indexToDelete = i" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     <i class="bi bi-trash"></i>
                 </button>
+            
+                <!-- Botón para compartir -->
+                <button (click)="sharePedido(item)" type="button" class="btn btn-primary btn-sm">
+                    <i class="bi bi-share"></i>
+                </button>
+            
+                <!-- Botón para llamar -->
+                <button (click)="makeCall()" type="button" class="btn btn-success btn-sm">
+                    <i class="bi bi-telephone"></i>
+                </button>
             </div>
+            
 
             <div *ngIf="panelOpenState[i]" class="collapse show">
                 <div class="card-body">

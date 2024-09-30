@@ -139,5 +139,58 @@ calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
     cantidad: resumen[gusto]
   }));
 }
+
+// Método para formatear el contenido del pedido para compartir
+sharePedido(item: Historial) {
+  if (!navigator.share) {
+    alert('La API de Web Share no está disponible en este navegador.');
+    return;
+  }
+
+  const fecha = new Date(item.fechaPedido).toLocaleString();
+  const totalEmpanadas = this.calcularTotalEmpanadas(item.pedido);
+  const totalSinEnvio = this.calcularTotalSinEnvio(item).toLocaleString();
+  const costoEnvio = item.costoEnvio.toLocaleString();
+  const totalConEnvio = this.calcularTotalConEnvio(item).toLocaleString();
+
+  // Resumen del pedido con gustos y cantidades
+  let resumen = 'Resumen del pedido:\n';
+  const gustosCantidad = this.contarGustos(item);
+  Object.keys(gustosCantidad).forEach(gusto => {
+    resumen += `${gustosCantidad[gusto]} empanadas de ${gusto}\n`;
+  });
+
+  const shareData = {
+    title: `Pedido del ${fecha}`,
+    text: `Pedido del ${fecha}\nTotal de empanadas: ${totalEmpanadas}\n${resumen}Costo sin envío: $${totalSinEnvio}\nCosto de envío: $${costoEnvio}\nTotal a pagar: $${totalConEnvio}`,
+  };
+
+  // Intentar compartir el contenido
+  navigator.share(shareData)
+    .then(() => console.log('Pedido compartido con éxito.'))
+    .catch((error) => console.error('Error al compartir el pedido:', error));
+}
+
+// Método para contar la cantidad de empanadas por gusto en un pedido
+contarGustos(item: Historial): { [gusto: string]: number } {
+  const gustosCantidad: { [gusto: string]: number } = {};
+
+  item.pedido.forEach(amigo => {
+    amigo.pedido.forEach(empanada => {
+      if (!gustosCantidad[empanada.gusto]) {
+        gustosCantidad[empanada.gusto] = 0;
+      }
+      gustosCantidad[empanada.gusto] += empanada.cantidad;
+    });
+  });
+
+  return gustosCantidad;
+}
+
+// Método para realizar una llamada
+makeCall() {
+  const phoneNumber = '45816761';
+  window.location.href = `tel:${phoneNumber}`;
+}
   
 }
