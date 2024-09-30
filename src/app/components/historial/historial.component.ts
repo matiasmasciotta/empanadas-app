@@ -29,6 +29,8 @@ interface Historial {
 export class HistorialComponent implements OnInit {
   historial: Historial[] = [];
   panelOpenState: boolean[] = [];
+  historialAEliminarIndex: number | null = null; // Almacena el índice del historial que se desea eliminar
+  indexToDelete: number | null = null; // Variable para guardar el índice a eliminar
 
   ngOnInit() {
     const historialGuardado = localStorage.getItem('historial');
@@ -36,10 +38,6 @@ export class HistorialComponent implements OnInit {
       this.historial = JSON.parse(historialGuardado).sort((a: Historial, b: Historial) => new Date(b.fechaPedido).getTime() - new Date(a.fechaPedido).getTime());
       this.panelOpenState = Array(this.historial.length).fill(false);
     }
-  }
-
-  togglePanel(index: number) {
-    this.panelOpenState[index] = !this.panelOpenState[index];
   }
 
   // Calcula el total de empanadas en un pedido
@@ -75,8 +73,7 @@ export class HistorialComponent implements OnInit {
     const costoEnvioTotal = item.costoEnvio;
 
     return cantidadAmigosConPedidos > 0 ? costoEnvioTotal / cantidadAmigosConPedidos : 0; // Divide el costo total de envío entre los amigos que tienen pedidos
-}
-
+  }
 
   // Calcula el total que debe pagar un amigo (empanadas + envío)
   calcularTotalAmigo(amigo: any, item: any): number {
@@ -84,18 +81,8 @@ export class HistorialComponent implements OnInit {
     const costoEnvio = this.calcularCostoEnvioAmigo(item);
     
     return costoEmpanadas + costoEnvio; // Suma el costo de empanadas y el costo de envío
-}
-
-
-  // Verifica si algún amigo tiene pedidos activos en el historial completo
-  hayPedidosActivos(): boolean {
-    return this.historial.some(item => item.pedido.some(amigo => amigo.pedido.length > 0));
   }
 
-  // Verifica si un historial tiene amigos con pedidos activos
-  hayPedidosActivosItem(item: Historial): boolean {
-    return item.pedido.some(amigo => amigo.pedido.length > 0);
-  }
 
   calcularTotalSinEnvio(item: Historial): number {
     return item.pedido.reduce((total, amigo) => {
@@ -107,5 +94,28 @@ export class HistorialComponent implements OnInit {
     const totalSinEnvio = this.calcularTotalSinEnvio(item);
     return totalSinEnvio + item.costoEnvio;
   }
+
+  // Mostrar modal de confirmación para eliminar historial
+  confirmarEliminacion(index: number) {
+    this.historialAEliminarIndex = index;
+  }
+
+  togglePanel(index: number) {
+    this.panelOpenState[index] = !this.panelOpenState[index];
+  }
+
+  hayPedidosActivos(): boolean {
+    return this.historial.length > 0;
+  }
+
+  hayPedidosActivosItem(item: any): boolean {
+    return item.pedido && item.pedido.length > 0;
+  }
+
+  eliminarHistorial() {
+    this.historial.splice(this.indexToDelete || 0, 1);
+    localStorage.setItem('historial', JSON.stringify(this.historial));
+  }
+
   
 }

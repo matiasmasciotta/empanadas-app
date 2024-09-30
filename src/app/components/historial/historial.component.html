@@ -3,14 +3,12 @@
         <h5>Historial de pedidos</h5>
     </div>
 
-    <!-- Mostrar la alerta si no hay pedidos -->
     <div *ngIf="!hayPedidosActivos()">
         <div class="alert alert-secondary text-center" role="alert">
             Aún no se han realizado pedidos.
         </div>
     </div>
 
-    <!-- Renderizar los cards si hay pedidos -->
     <ng-container *ngFor="let item of historial; let i = index">
         <div *ngIf="hayPedidosActivosItem(item)" class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center" (click)="togglePanel(i)" style="cursor: pointer;">
@@ -18,7 +16,6 @@
                     <strong>Pedido: {{ item.fechaPedido | date:'dd/MM/yyyy, HH:mm' }}</strong>
                 </div>
                 <div>
-                    <!-- Total de empanadas sin incluir envío -->
                     <small>
                         <strong>Cantidad de empanadas: {{ calcularTotalEmpanadas(item.pedido) }}</strong> 
                         - <strong>${{ calcularTotalSinEnvio(item) | number }}</strong>
@@ -26,17 +23,20 @@
                         <i>+ ${{ item.costoEnvio }} de envío </i>
                     </small>
                     <br>
-                    <!-- Total final incluyendo el envío, en una letra más grande -->
                     <strong style="font-size: larger;">Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
                     <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi ml-2"></i>
                 </div>
-            </div>
+                
+                    
             
+                <button (click)="indexToDelete = i" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
 
             <div *ngIf="panelOpenState[i]" class="collapse show">
                 <div class="card-body">
                     <ng-container *ngFor="let amigo of item.pedido">
-                        <!-- Mostrar solo amigos con pedidos -->
                         <div *ngIf="amigo.pedido.length > 0">
                             <h5>{{ amigo.nombre }}</h5>
                             <ul>
@@ -59,5 +59,47 @@
                 </div>
             </div>
         </div>
+
+
     </ng-container>
 </div>
+
+
+<!-- Button trigger modal -->
+    <!-- Modal de confirmación de eliminación -->
+    <div class="modal fade" id="staticBackdrop" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro que deseas eliminar este pedido del historial?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" (click)="eliminarHistorial()" data-bs-dismiss="modal">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Understood</button>
+        </div>
+      </div>
+    </div>
+  </div>
