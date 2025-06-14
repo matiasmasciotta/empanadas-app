@@ -152,17 +152,56 @@ sharePedido(item: Historial) {
   const totalSinEnvio = this.calcularTotalSinEnvio(item).toLocaleString();
   const costoEnvio = item.costoEnvio.toLocaleString();
   const totalConEnvio = this.calcularTotalConEnvio(item).toLocaleString();
+  const costoEnvioPorAmigo = this.calcularCostoEnvioAmigo(item);
 
-  // Resumen del pedido con gustos y cantidades
-  let resumen = 'Resumen del pedido:\n';
-  const gustosCantidad = this.contarGustos(item);
-  Object.keys(gustosCantidad).forEach(gusto => {
-    resumen += `${gustosCantidad[gusto]} empanadas de ${gusto}\n`;
+  // Construir el mensaje completo con detalles por amigo
+  let mensajeCompleto = `🍥 PEDIDO DE EMPANADAS 🍥\n`;
+  mensajeCompleto += `📅 Fecha: ${fecha}\n\n`;
+
+  // Detalles por cada amigo
+  mensajeCompleto += `👥 DETALLE POR PERSONA:\n`;
+  mensajeCompleto += `${'='.repeat(35)}\n`;
+  
+  item.pedido.forEach(amigo => {
+    if (amigo.pedido.length > 0) {
+      const totalEmpanadasAmigo = this.calcularTotalEmpanadasAmigo(amigo);
+      const costoEmpanadasAmigo = this.calcularCostoEmpanadasAmigo(amigo, item);
+      const totalAmigo = this.calcularTotalAmigo(amigo, item);
+      
+      mensajeCompleto += `\n👤 ${amigo.nombre.toUpperCase()}\n`;
+      mensajeCompleto += `📦 Empanadas (${totalEmpanadasAmigo} unidades):\n`;
+      
+      amigo.pedido.forEach(pedido => {
+        const subtotal = pedido.cantidad * item.costoEmpanada;
+        mensajeCompleto += `   • ${pedido.cantidad}x ${pedido.gusto} = $${subtotal.toLocaleString()}\n`;
+      });
+      
+      mensajeCompleto += `💰 Subtotal empanadas: $${costoEmpanadasAmigo.toLocaleString()}\n`;
+      mensajeCompleto += `🚚 Envío (proporcional): $${costoEnvioPorAmigo.toLocaleString()}\n`;
+      mensajeCompleto += `💳 TOTAL A PAGAR: $${totalAmigo.toLocaleString()}\n`;
+      mensajeCompleto += `${'-'.repeat(25)}\n`;
+    }
   });
 
+  // Resumen general del pedido
+  mensajeCompleto += `\n📊 RESUMEN GENERAL:\n`;
+  mensajeCompleto += `${'='.repeat(35)}\n`;
+  
+  const gustosCantidad = this.contarGustos(item);
+  Object.keys(gustosCantidad).forEach(gusto => {
+    mensajeCompleto += `🍥 ${gustosCantidad[gusto]} empanadas de ${gusto}\n`;
+  });
+  
+  mensajeCompleto += `\n📈 TOTALES:\n`;
+  mensajeCompleto += `🍥 Total empanadas: ${totalEmpanadas} unidades\n`;
+  mensajeCompleto += `💰 Costo empanadas: $${totalSinEnvio}\n`;
+  mensajeCompleto += `🚚 Costo de envío: $${costoEnvio}\n`;
+  mensajeCompleto += `💳 TOTAL GENERAL: $${totalConEnvio}\n`;
+  mensajeCompleto += `\n🍴 ¡Buen provecho! 🍴`;
+
   const shareData = {
-    title: `Pedido del ${fecha}`,
-    text: `Pedido del ${fecha}\nTotal de empanadas: ${totalEmpanadas}\n${resumen}Costo sin envío: $${totalSinEnvio}\nCosto de envío: $${costoEnvio}\nTotal a pagar: $${totalConEnvio}`,
+    title: `Pedido de Empanadas - ${fecha}`,
+    text: mensajeCompleto,
   };
 
   // Intentar compartir el contenido
