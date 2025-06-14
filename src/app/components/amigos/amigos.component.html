@@ -1,27 +1,117 @@
 <div class="">
   <!-- Título de la sección -->
   <div class="alert alert-warning text-center" role="alert">
-    <h5>Listado de Amigos</h5>
+    <h5>👥 Gestión de Amigos y Grupos de Pago</h5>
   </div>
 
-  <!-- Contenedor de tarjetas de amigos -->
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-lg-6 g-2 animate-card">
-    <div class="col" *ngFor="let amigo of amigos">
-      <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
-        <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
-          <div class="icon-container mb-3" style="background: #fff3cd; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
-            <i class="bi bi-person-fill text-warning" style="font-size: 24px;"></i> <!-- Icono de amigo -->
+  <!-- Sección de Grupos de Pago -->
+  <div *ngIf="gruposPago.length > 0" class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="text-secondary">🔗 Grupos de Pago</h6>
+      <button class="btn btn-outline-success btn-sm" (click)="openGrupoModal()">
+        <i class="bi bi-plus-circle"></i> Nuevo Grupo
+      </button>
+    </div>
+    
+    <div class="row g-3">
+      <div class="col-12" *ngFor="let grupo of gruposPago">
+        <div class="card shadow-sm" [style.border-left]="'4px solid ' + grupo.color">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="card-title mb-2">
+                  <span class="badge rounded-pill" [style.background-color]="grupo.color" style="color: white;">
+                    {{ grupo.nombre }}
+                  </span>
+                </h6>
+                <div class="small text-muted mb-2">
+                  <i class="bi bi-people-fill"></i> Miembros: 
+                  <span *ngFor="let miembro of grupo.miembros; let last = last">
+                    {{ miembro }}<span *ngIf="!last">, </span>
+                  </span>
+                </div>
+                <div class="small">
+                  <i class="bi bi-credit-card text-success"></i> 
+                  <strong>Paga: {{ grupo.pagador }}</strong>
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-primary" (click)="openGrupoModal(grupo)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-outline-danger" (click)="removeGrupo(grupo)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
           </div>
-          <h5 class="card-title mb-2" style="font-size: 1rem; font-weight: 500;">{{ amigo.nombre }}</h5>
-          <p *ngIf="hasActivePedidos(amigo)" class="text-center text-success mb-3">Activo</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <!-- Efecto degradado en el footer -->
-          <div class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
-            <!-- Iconos de edición y eliminación -->
-            <div class="d-flex justify-content-between w-100">
-              <i (click)="openEditModal(amigo)" class="bi bi-pencil-square text-secondary" style="cursor: pointer;"></i>
-              &nbsp;&nbsp;
-              <i (click)="removeAmigo(amigo.nombre)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
+  <!-- Botón crear grupo si no hay grupos -->
+  <div *ngIf="gruposPago.length === 0" class="text-center mb-4">
+    <button class="btn btn-success" (click)="openGrupoModal()">
+      <i class="bi bi-plus-circle"></i> Crear Primer Grupo de Pago
+    </button>
+  </div>
+
+  <!-- Sección de Amigos Individuales -->
+  <div *ngIf="getAmigosIndividuales().length > 0">
+    <h6 class="text-secondary mb-3">👤 Amigos Individuales</h6>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 animate-card">
+      <div class="col" *ngFor="let amigo of getAmigosIndividuales()">
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
+          <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
+            <div class="icon-container mb-3" style="background: #fff3cd; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
+              <i class="bi bi-person-fill text-warning" style="font-size: 24px;"></i>
+            </div>
+            <h5 class="card-title mb-2" style="font-size: 1rem; font-weight: 500;">{{ amigo.nombre }}</h5>
+            <p *ngIf="hasActivePedidos(amigo)" class="text-center text-success mb-3">Activo</p>
+
+            <div class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
+              <div class="d-flex justify-content-between w-100">
+                <i (click)="openEditModal(amigo)" class="bi bi-pencil-square text-secondary" style="cursor: pointer;"></i>
+                <i (click)="removeAmigo(amigo.nombre)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Amigos en Grupos -->
+  <div *ngIf="gruposPago.length > 0">
+    <h6 class="text-secondary mb-3 mt-4">👥 Amigos en Grupos</h6>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 animate-card">
+      <div class="col" *ngFor="let amigo of amigos">
+        <div *ngIf="getGrupoDeAmigo(amigo.nombre) as grupo" class="card h-100 border-0 shadow-sm" 
+             style="border-radius: 15px;" 
+             [style.background]="'linear-gradient(135deg, ' + grupo.color + '20, ' + grupo.color + '10)'">
+          <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
+            <div class="icon-container mb-3" 
+                 [style.background]="grupo.color + '30'" 
+                 style="padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
+              <i class="bi bi-people-fill" 
+                 [style.color]="grupo.color" 
+                 style="font-size: 24px;"></i>
+            </div>
+            <h5 class="card-title mb-1" style="font-size: 1rem; font-weight: 500;">{{ amigo.nombre }}</h5>
+            <small class="text-muted mb-2">{{ grupo.nombre }}</small>
+            <p *ngIf="hasActivePedidos(amigo)" class="text-center text-success mb-3">Activo</p>
+            <div *ngIf="grupo.pagador === amigo.nombre" class="badge bg-success mb-2">
+              <i class="bi bi-credit-card"></i> Pagador
+            </div>
+
+            <div class="card-footer text-center py-2" 
+                 [style.background]="'linear-gradient(135deg, ' + grupo.color + '18, ' + grupo.color + '08)'" 
+                 style="border-top: none; border-radius: 15px 15px 15px 15px;">
+              <div class="d-flex justify-content-between w-100">
+                <i (click)="openEditModal(amigo)" class="bi bi-pencil-square text-secondary" style="cursor: pointer;"></i>
+                <i (click)="removeAmigo(amigo.nombre)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
+              </div>
             </div>
           </div>
         </div>
@@ -31,15 +121,14 @@
 
   <!-- Sección para agregar un nuevo amigo -->
   <div class="alert alert-light mt-4 text-center animate-card" role="alert">
-    <h5>Agregar un Amigo</h5>
+    <h5>➕ Agregar un Amigo</h5>
     <div class="input-group mb-3">
-      <input [(ngModel)]="newAmigo.nombre" class="form-control" placeholder="Nombre">
+      <input [(ngModel)]="newAmigo.nombre" class="form-control" placeholder="Nombre del amigo">
       <button class="btn btn-outline-warning" (click)="addAmigo()">Agregar</button>
     </div>
   </div>
 
-  <br>
-  <br>
+  <br><br>
 
   <!-- Modal para editar amigo -->
   <app-modal
@@ -49,4 +138,65 @@
     (submit)="updateAmigo({ nombre: $event, pedidos: [] })"
     (close)="closeEditModal()">
   </app-modal>
+
+  <!-- Modal para grupos de pago -->
+  <div *ngIf="showGrupoModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-people-fill"></i>
+            {{ editingGrupo ? 'Editar Grupo' : 'Nuevo Grupo de Pago' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeGrupoModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre del Grupo</label>
+            <input [(ngModel)]="nuevoGrupoNombre" class="form-control" placeholder="Ej: Familia García, Pareja, etc.">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Seleccionar Miembros (mínimo 2)</label>
+            <div class="row g-2">
+              <div class="col-6 col-md-4" *ngFor="let amigo of amigosDisponibles">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" 
+                         [checked]="isMiembroSeleccionado(amigo.nombre)"
+                         (change)="toggleMiembro(amigo.nombre)">
+                  <label class="form-check-label">
+                    {{ amigo.nombre }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3" *ngIf="miembrosSeleccionados.length > 0">
+            <label class="form-label">¿Quién paga por el grupo?</label>
+            <select [(ngModel)]="pagadorSeleccionado" class="form-select">
+              <option value="">Seleccionar pagador</option>
+              <option *ngFor="let miembro of miembrosSeleccionados" [value]="miembro">
+                {{ miembro }}
+              </option>
+            </select>
+          </div>
+
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Importante:</strong> Los pedidos se mantienen individuales por cada amigo, 
+            pero en el historial se mostrará el total agrupado que debe pagar el responsable.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeGrupoModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" 
+                  [disabled]="!nuevoGrupoNombre || miembrosSeleccionados.length < 2 || !pagadorSeleccionado"
+                  (click)="saveGrupo()">
+            {{ editingGrupo ? 'Actualizar' : 'Crear' }} Grupo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

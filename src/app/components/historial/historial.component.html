@@ -1,6 +1,6 @@
 <div class="animate-card">
     <div class="alert alert-primary text-center" role="alert">
-        <h5>Historial de pedidos</h5>
+        <h5>📋 Historial de pedidos</h5>
     </div>
 
     <div *ngIf="!hayPedidosActivos()">
@@ -10,114 +10,195 @@
     </div>
 
     <ng-container *ngFor="let item of historial; let i = index">
-        <div *ngIf="hayPedidosActivosItem(item)" class="card mb-3">
+        <div *ngIf="hayPedidosActivosItem(item)" class="card mb-3 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center" (click)="togglePanel(i)" style="cursor: pointer;">
                 <div>
-                    <strong>Pedido: {{ item.fechaPedido | date:'dd/MM/yyyy, HH:mm' }}</strong>
+                    <strong>📅 {{ item.fechaPedido | date:'dd/MM/yyyy, HH:mm' }}</strong>
                 </div>
-                <div>
+                <div class="text-end">
                     <small>
-                        <strong>Cantidad de empanadas: {{ calcularTotalEmpanadas(item.pedido) }}</strong> 
+                        <strong>🍥 {{ calcularTotalEmpanadas(item.pedido) }} empanadas</strong> 
                         - <strong>${{ calcularTotalSinEnvio(item) | number }}</strong>
                         <br>
-                        <i>+ ${{ item.costoEnvio }} de envío </i>
+                        <i>🚚 + ${{ item.costoEnvio }} de envío</i>
                     </small>
                     <br>
-                    <strong style="font-size: larger;">Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
+                    <strong style="font-size: larger;" class="text-success">💳 Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
                     <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi ml-2"></i>
                 </div>
             
-                <!-- Botón para eliminar el historial -->
-                <button (click)="indexToDelete = i" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                    <i class="bi bi-trash"></i>
-                </button>
-            
-                <!-- Botón para compartir -->
-                <button (click)="sharePedido(item)" type="button" class="btn btn-primary btn-sm">
-                    <i class="bi bi-share"></i>
-                </button>
-            
-                <!-- Botón para llamar -->
-                <button (click)="makeCall()" type="button" class="btn btn-success btn-sm">
-                    <i class="bi bi-telephone"></i>
-                </button>
+                <div class="btn-group">
+                    <!-- Botón para eliminar el historial -->
+                    <button (click)="indexToDelete = i" type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                
+                    <!-- Botón para compartir -->
+                    <button (click)="sharePedido(item)" type="button" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-share"></i>
+                    </button>
+                
+                    <!-- Botón para llamar -->
+                    <button (click)="makeCall()" type="button" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-telephone"></i>
+                    </button>
+                </div>
             </div>
-            
 
             <div *ngIf="panelOpenState[i]" class="collapse show">
                 <div class="card-body">
-                    <ng-container *ngFor="let amigo of item.pedido">
-                      <div *ngIf="amigo.pedido.length > 0">
-                        <h5>{{ amigo.nombre }}</h5>
-                        <ul>
-                          <li *ngFor="let pedido of amigo.pedido">
-                            {{ pedido.cantidad }} de {{ pedido.gusto }}
-                          </li>
-                        </ul>
-                        <div>
-                          <small>Cantidad: {{ calcularTotalEmpanadasAmigo(amigo) }} empanadas x ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</small>
-                          <br>
-                          <small>Costo de envío: ${{ calcularCostoEnvioAmigo(item) | number }}</small>
-                          <br>
-                          <b><i>Total a pagar: ${{ calcularTotalAmigo(amigo, item) | number }}</i> </b>
+                    <!-- Mostrar grupos de pago -->
+                    <ng-container *ngFor="let grupoCalculado of getGruposYAmigosIndividuales(item).grupos">
+                        <div class="card mb-3 border-0" [style.background]="'linear-gradient(135deg, ' + grupoCalculado.grupo.color + '15, ' + grupoCalculado.grupo.color + '05)'">
+                            <div class="card-header" [style.background]="grupoCalculado.grupo.color + '20'" [style.border-left]="'4px solid ' + grupoCalculado.grupo.color">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-people-fill" [style.color]="grupoCalculado.grupo.color"></i>
+                                        {{ grupoCalculado.grupo.nombre }}
+                                    </h6>
+                                    <div class="text-end">
+                                        <small class="text-muted">💳 Paga: <strong>{{ grupoCalculado.grupo.pagador }}</strong></small>
+                                        <br>
+                                        <strong class="text-success">Total: ${{ grupoCalculado.totalConEnvio | number }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="text-muted mb-3">👥 Detalles por miembro:</h6>
+                                        <div *ngFor="let amigo of grupoCalculado.miembros" class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>{{ amigo.nombre }}</strong>
+                                                    <ul class="list-unstyled ms-3 mt-1">
+                                                        <li *ngFor="let pedido of amigo.pedido" class="small">
+                                                            • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * item.costoEmpanada) | number }}
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">{{ calcularTotalEmpanadasAmigo(amigo) }} empanadas</small>
+                                                    <br>
+                                                    <strong>${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="alert alert-light h-100 d-flex flex-column justify-content-center">
+                                            <div class="text-center">
+                                                <div class="mb-2">
+                                                    <i class="bi bi-box" [style.color]="grupoCalculado.grupo.color" style="font-size: 2rem;"></i>
+                                                </div>
+                                                <div class="small text-muted">Total empanadas</div>
+                                                <div class="h5 mb-2">{{ grupoCalculado.totalEmpanadas }}</div>
+                                                <div class="small text-muted">Subtotal: ${{ grupoCalculado.totalCosto | number }}</div>
+                                                <div class="small text-muted">Envío: ${{ calcularCostoEnvioAmigo(item) | number }}</div>
+                                                <hr class="my-2">
+                                                <div class="fw-bold text-success">${{ grupoCalculado.totalConEnvio | number }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <hr>
-                      </div>
+                    </ng-container>
+
+                    <!-- Mostrar amigos individuales -->
+                    <ng-container *ngFor="let amigo of getGruposYAmigosIndividuales(item).individuales">
+                        <div class="card mb-3 border-0" style="background: linear-gradient(135deg, #f8f9fa, #ffffff);">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-person-fill text-secondary"></i>
+                                        {{ amigo.nombre }}
+                                    </h6>
+                                    <strong class="text-success">Total: ${{ calcularTotalAmigo(amigo, item) | number }}</strong>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <ul class="list-unstyled">
+                                            <li *ngFor="let pedido of amigo.pedido" class="mb-1">
+                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * item.costoEmpanada) | number }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="small text-muted">
+                                            <div>Empanadas: {{ calcularTotalEmpanadasAmigo(amigo) }}</div>
+                                            <div>Subtotal: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</div>
+                                            <div>Envío: ${{ calcularCostoEnvioAmigo(item) | number }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </ng-container>
                   
-                    <!-- Resumen de pedido -->
-                    <div class="alert alert-info mt-3">
-                      <h6>Resumen de pedido:</h6>
-                      <ul>
-                        <li *ngFor="let resumen of calcularResumenGustos(item)">
-                          {{ resumen.cantidad }} de {{ resumen.gusto }}
-                        </li>
-                      </ul>
+                    <!-- Resumen general del pedido -->
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="bi bi-clipboard-data"></i> Resumen general del pedido:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li *ngFor="let resumen of calcularResumenGustos(item)" class="mb-1">
+                                        🍥 {{ resumen.cantidad }}x {{ resumen.gusto }}
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-end">
+                                    <div class="mb-1"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(item.pedido) }}</div>
+                                    <div class="mb-1"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
+                                    <div class="mb-1"><strong>Envío:</strong> ${{ item.costoEnvio | number }}</div>
+                                    <div class="fs-5"><strong class="text-success">Total:</strong> ${{ calcularTotalConEnvio(item) | number }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
+                </div>
             </div>
         </div>
-
-
     </ng-container>
 </div>
 
-
-<!-- Button trigger modal -->
-    <!-- Modal de confirmación de eliminación -->
-    <div class="modal fade" id="staticBackdrop" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro que deseas eliminar este pedido del historial?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" (click)="eliminarHistorial()" data-bs-dismiss="modal">Eliminar</button>
-                </div>
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="staticBackdrop" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro que deseas eliminar este pedido del historial?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" (click)="eliminarHistorial()" data-bs-dismiss="modal">Eliminar</button>
             </div>
         </div>
     </div>
-  
-  <!-- Modal -->
-  <div class="modal fade" id="staticBackdrop2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          ...
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Understood</button>
-        </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Understood</button>
       </div>
     </div>
   </div>
+</div>
