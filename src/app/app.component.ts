@@ -84,36 +84,58 @@ export class AppComponent implements OnInit {
       }
     ],
     amigos: [
-      { 
-        nombre: 'Matias', 
-        empanadas: [],
-        grupoPago: 'Familia'
-      },
-      { 
-        nombre: 'Marisa', 
-        empanadas: [],
-        grupoPago: 'Familia'
-      },
-      { 
-        nombre: 'Sara', 
-        empanadas: [],
-        grupoPago: 'Amigos'
-      },
-      { 
-        nombre: 'Juan', 
-        empanadas: [],
-        grupoPago: 'Amigos'
-      },
-      { 
-        nombre: 'Ana', 
-        empanadas: [],
-        grupoPago: 'Trabajo'
-      }
+      { "nombre": "Mati", "empanadas": [] },
+      { "nombre": "Mari", "empanadas": [] },
+      { "nombre": "Sari", "empanadas": [] },
+      { "nombre": "silvia", "empanadas": [] },
+      { "nombre": "Osvaldo", "empanadas": [] },
+      { "nombre": "Milena", "empanadas": [] },
+      { "nombre": "Nicole", "empanadas": [] },
+      { "nombre": "Fede", "empanadas": [] },
+      { "nombre": "Carla", "empanadas": [] },
+      { "nombre": "Cesario", "empanadas": [] },
+      { "nombre": "Valeria", "empanadas": [] },
+      { "nombre": "Gisela", "empanadas": [] },
+      { "nombre": "Frasco", "empanadas": [] },
+      { "nombre": "Gabi", "empanadas": [] },
+      { "nombre": "Fiore", "empanadas": [] }
     ],
     gruposPago: [
-      { nombre: 'Familia', amigos: ['Matias', 'Marisa'] },
-      { nombre: 'Amigos', amigos: ['Sara', 'Juan'] },
-      { nombre: 'Trabajo', amigos: ['Ana'] }
+      {
+        "id": "mcdscgzgeoxkgv89jzf",
+        "nombre": "Suspicacia",
+        "miembros": ["Mati", "Mari", "Sari", "Nicole", "Milena"],
+        "color": "#5F27CD",
+        "pagador": "Mati"
+      },
+      {
+        "id": "mcdsebd865yinjiyf52",
+        "nombre": "Masciotta",
+        "miembros": ["silvia", "Osvaldo"],
+        "color": "#FF6B6B",
+        "pagador": "silvia"
+      },
+      {
+        "id": "mcdsf1bcz5fb2wyy4b",
+        "nombre": "Gordo",
+        "miembros": ["Fede", "Carla"],
+        "color": "#6C5CE7",
+        "pagador": "Fede"
+      },
+      {
+        "id": "mcdsg4buntnzsfjqlzn",
+        "nombre": "GiseFrasco",
+        "miembros": ["Gisela", "Frasco"],
+        "color": "#A29BFE",
+        "pagador": "Gisela"
+      },
+      {
+        "id": "mcdsgh48hmmp2ih8k4j",
+        "nombre": "DoGabriel",
+        "miembros": ["Fiore", "Gabi"],
+        "color": "#EE5A24",
+        "pagador": "Fiore"
+      }
     ]
   };
 
@@ -137,13 +159,23 @@ export class AppComponent implements OnInit {
     this.showConfigMenu = !this.showConfigMenu;
   }
 
-  cargarDatosEjemplo(): void {
-    if (confirm('¿Cargar datos de ejemplo? Esto agregará casas de empanadas y amigos de ejemplo.')) {
+  cargarGustos(): void {
+    if (confirm('¿Cargar casas de empanadas de ejemplo? Esto agregará las casas Mi Gusto y Rincón Norteño con sus gustos.')) {
       // Cargar casas de empanadas
       this.datosEjemplo.casasEmpanadas.forEach(casa => {
         this.casasService.addCasa(casa);
       });
 
+      this.showConfigMenu = false;
+      alert('¡Casas de empanadas de ejemplo cargadas exitosamente!');
+      
+      // Recargar la página para mostrar los cambios
+      window.location.reload();
+    }
+  }
+
+  cargarAmigos(): void {
+    if (confirm('¿Cargar amigos de ejemplo? Esto agregará 15 amigos y 5 grupos de pago.')) {
       // Cargar amigos con sus grupos de pago
       this.datosEjemplo.amigos.forEach(amigo => {
         this.amigosService.addAmigo(amigo);
@@ -153,7 +185,7 @@ export class AppComponent implements OnInit {
       localStorage.setItem('grupos-pago', JSON.stringify(this.datosEjemplo.gruposPago));
 
       this.showConfigMenu = false;
-      alert('¡Datos de ejemplo cargados exitosamente!');
+      alert('¡Amigos y grupos de pago de ejemplo cargados exitosamente!');
       
       // Recargar la página para mostrar los cambios
       window.location.reload();

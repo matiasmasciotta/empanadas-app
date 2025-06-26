@@ -36,27 +36,36 @@
   
   <!-- Menú de opciones -->
   <div class="fab-menu" [class.show]="showConfigMenu">
+    <!-- Cargar datos -->
     <button class="btn btn-success fab-option" 
-            (click)="cargarDatosEjemplo()"
-            title="Cargar datos de ejemplo">
-      <i class="bi bi-download"></i>
+            (click)="cargarGustos()"
+            title="Cargar gustos de ejemplo">
+      <i class="bi bi-shop-window"></i>
     </button>
     
+    <button class="btn btn-info fab-option" 
+            (click)="cargarAmigos()"
+            title="Cargar amigos de ejemplo">
+      <i class="bi bi-person-plus-fill"></i>
+    </button>
+    
+    <!-- Limpiar datos -->
     <button class="btn btn-warning fab-option" 
             (click)="limpiarGustos()"
-            title="Limpiar gustos/casas">
+            title="Eliminar todas las casas">
       <i class="bi bi-shop"></i>
     </button>
     
     <button class="btn btn-danger fab-option" 
             (click)="limpiarAmigos()"
-            title="Limpiar amigos">
+            title="Eliminar todos los amigos">
       <i class="bi bi-people-fill"></i>
     </button>
     
+    <!-- Limpiar todo -->
     <button class="btn btn-dark fab-option" 
             (click)="limpiarTodo()"
-            title="Limpiar todo">
+            title="Eliminar todos los datos">
       <i class="bi bi-trash3-fill"></i>
     </button>
   </div>

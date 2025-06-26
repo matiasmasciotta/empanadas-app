@@ -111,20 +111,22 @@ export class AmigosService {
     let cambios = false;
     
     grupos.forEach(grupo => {
-      const indexMiembro = grupo.miembros.indexOf(nombreAmigo);
-      if (indexMiembro > -1) {
-        grupo.miembros.splice(indexMiembro, 1);
-        cambios = true;
-        
-        // Si era el pagador, asignar el primer miembro como nuevo pagador
-        if (grupo.pagador === nombreAmigo && grupo.miembros.length > 0) {
-          grupo.pagador = grupo.miembros[0];
+      if (grupo.miembros && Array.isArray(grupo.miembros)) {
+        const indexMiembro = grupo.miembros.indexOf(nombreAmigo);
+        if (indexMiembro > -1) {
+          grupo.miembros.splice(indexMiembro, 1);
+          cambios = true;
+          
+          // Si era el pagador, asignar el primer miembro como nuevo pagador
+          if (grupo.pagador === nombreAmigo && grupo.miembros.length > 0) {
+            grupo.pagador = grupo.miembros[0];
+          }
         }
       }
     });
     
     // Eliminar grupos que se quedaron sin miembros
-    const gruposFiltrados = grupos.filter(g => g.miembros.length > 0);
+    const gruposFiltrados = grupos.filter(g => g.miembros && Array.isArray(g.miembros) && g.miembros.length > 0);
     
     if (cambios) {
       this.saveGruposPago(gruposFiltrados);
@@ -138,7 +140,7 @@ export class AmigosService {
   // Métodos de utilidad
   getGrupoDeAmigo(nombreAmigo: string): GrupoPago | null {
     const grupos = this.getGruposPago();
-    return grupos.find(g => g.miembros.includes(nombreAmigo)) || null;
+    return grupos.find(g => g.miembros && Array.isArray(g.miembros) && g.miembros.includes(nombreAmigo)) || null;
   }
 
   getAmigosDisponiblesParaGrupo(grupoId: string = ''): Amigo[] {
