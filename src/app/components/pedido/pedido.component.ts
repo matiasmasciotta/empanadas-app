@@ -24,6 +24,10 @@ export class PedidoComponent implements OnInit {
   // Estados
   hayPedidoActivo: boolean = false;
   casaActiva: CasaEmpanadas | null = null;
+  
+  // Selecciones para los combos
+  amigoSeleccionado: Amigo | null = null;
+  gustoSeleccionado: string | null = null;
 
   constructor(
     private casasService: CasasEmpanadasService,
@@ -95,23 +99,43 @@ export class PedidoComponent implements OnInit {
     }
   }
 
-  agregarEmpanada(amigo: Amigo, gusto: string): void {
+  agregarEmpanada(): void {
     if (!this.casaSeleccionada) {
       alert('Primero selecciona una casa de empanadas');
       return;
     }
 
-    if (!amigo.empanadas) {
-      amigo.empanadas = [];
+    if (!this.amigoSeleccionado) {
+      alert('Selecciona un amigo');
+      return;
     }
 
-    amigo.empanadas.push({
-      gusto: gusto,
-      cantidad: 1
-    });
+    if (!this.gustoSeleccionado) {
+      alert('Selecciona un gusto');
+      return;
+    }
 
-    this.amigosService.updateAmigoData(amigo);
+    if (!this.amigoSeleccionado.empanadas) {
+      this.amigoSeleccionado.empanadas = [];
+    }
+
+    // Verificar si ya existe ese gusto para el amigo
+    const existeGusto = this.amigoSeleccionado.empanadas.find(emp => emp.gusto === this.gustoSeleccionado);
+    
+    if (existeGusto) {
+      existeGusto.cantidad++;
+    } else {
+      this.amigoSeleccionado.empanadas.push({
+        gusto: this.gustoSeleccionado,
+        cantidad: 1
+      });
+    }
+
+    this.amigosService.updateAmigoData(this.amigoSeleccionado);
     this.detectarPedidoActivo(); // Actualizar estado
+    
+    // Limpiar selecciones
+    this.gustoSeleccionado = null;
   }
 
   eliminarEmpanada(amigo: Amigo, index: number): void {
@@ -168,6 +192,26 @@ export class PedidoComponent implements OnInit {
     return this.amigos.some(amigo => 
       amigo.empanadas && amigo.empanadas.length > 0
     );
+  }
+
+  getResumenPorSabores(): { gusto: string, cantidad: number }[] {
+    const resumen: { [gusto: string]: number } = {};
+    
+    this.amigos.forEach(amigo => {
+      if (amigo.empanadas) {
+        amigo.empanadas.forEach(empanada => {
+          if (resumen[empanada.gusto]) {
+            resumen[empanada.gusto] += empanada.cantidad;
+          } else {
+            resumen[empanada.gusto] = empanada.cantidad;
+          }
+        });
+      }
+    });
+
+    return Object.keys(resumen)
+      .map(gusto => ({ gusto, cantidad: resumen[gusto] }))
+      .sort((a, b) => b.cantidad - a.cantidad); // Ordenar por cantidad descendente
   }
 
   terminarPedido(): void {

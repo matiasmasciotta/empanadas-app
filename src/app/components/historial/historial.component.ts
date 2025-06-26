@@ -15,10 +15,25 @@ interface Amigo {
 }
 
 interface Historial {
-  fechaPedido: Date;
-  pedido: Amigo[];
-  costoEmpanada: number;
-  costoEnvio: number;
+  fechaPedido?: Date;
+  fecha?: string;
+  pedido?: Amigo[];
+  amigos?: any[];
+  costoEmpanada?: number;
+  costoEnvio?: number;
+  casa?: {
+    id: string;
+    nombre: string;
+    telefono?: string;
+    precioEmpanada: number;
+    costoEnvio: number;
+  };
+  totales?: {
+    empanadas: number;
+    subtotal: number;
+    envio: number;
+    total: number;
+  };
 }
 
 interface GrupoCalculado {
@@ -33,23 +48,170 @@ interface GrupoCalculado {
   selector: 'app-historial',
   templateUrl: './historial.component.html',
   styleUrls: ['./historial.component.css'],
-  standalone: true, // Si estás usando componentes independientes
-  imports: [CommonModule, FormsModule], // Importa CommonModule y FormsModule
+  standalone: true,
+  imports: [CommonModule, FormsModule],
 })
 export class HistorialComponent implements OnInit {
   historial: Historial[] = [];
   panelOpenState: boolean[] = [];
-  historialAEliminarIndex: number | null = null; // Almacena el índice del historial que se desea eliminar
-  indexToDelete: number | null = null; // Variable para guardar el índice a eliminar
+  indexToDelete: number | null = null;
 
   constructor(private amigosService: AmigosService) {}
 
   ngOnInit() {
+    // Cargar historial antiguo
     const historialGuardado = localStorage.getItem('historial');
+    let historialAntiguo: Historial[] = [];
     if (historialGuardado) {
-      this.historial = JSON.parse(historialGuardado).sort((a: Historial, b: Historial) => new Date(b.fechaPedido).getTime() - new Date(a.fechaPedido).getTime());
-      this.panelOpenState = Array(this.historial.length).fill(false);
+      historialAntiguo = JSON.parse(historialGuardado);
     }
+
+    // Cargar historial nuevo
+    const historialesNuevos = localStorage.getItem('historiales');
+    let historialNuevo: Historial[] = [];
+    if (historialesNuevos) {
+      historialNuevo = JSON.parse(historialesNuevos);
+    }
+
+    // Combinar y ordenar
+    this.historial = [...historialAntiguo, ...historialNuevo].sort((a: Historial, b: Historial) => {
+      const fechaA = this.getFecha(a);
+      const fechaB = this.getFecha(b);
+      return fechaB.getTime() - fechaA.getTime();
+    });
+    
+    this.panelOpenState = Array(this.historial.length).fill(false);
+  }
+
+  // Métodos auxiliares para compatibilidad
+  private getFecha(item: Historial): Date {
+    if (item.fecha) {
+      return new Date(item.fecha);
+    } else if (item.fechaPedido) {
+      return new Date(item.fechaPedido);
+    }
+    return new Date();
+  }
+
+  private getAmigos(item: Historial): Amigo[] {
+    if (item.amigos) {
+      return item.amigos.map((amigo: any) => ({
+        nombre: amigo.nombre,
+        pedido: amigo.empanadas ? amigo.empanadas.map((emp: any) => ({
+          gusto: emp.gusto,
+          cantidad: emp.cantidad
+        })) : []
+      }));
+    } else if (item.pedido) {
+      return item.pedido;
+    }
+    return [];
+  }
+
+  private getCostoEmpanada(item: Historial): number {
+    if (item.casa) {
+      return item.casa.precioEmpanada;
+    } else if (item.costoEmpanada) {
+      return item.costoEmpanada;
+    }
+    return 0;
+  }
+
+  private getCostoEnvio(item: Historial): number {
+    if (item.casa) {
+      return item.casa.costoEnvio;
+    } else if (item.costoEnvio) {
+      return item.costoEnvio;
+    }
+    return 0;
+  }
+
+  // Métodos para la vista
+  getFechaDisplay(item: Historial): Date {
+    return this.getFecha(item);
+  }
+
+  getAmigosDisplay(item: Historial): Amigo[] {
+    return this.getAmigos(item);
+  }
+
+  getCostoEmpanadeDisplay(item: Historial): number {
+    return this.getCostoEmpanada(item);
+  }
+
+  getCostoEnvioDisplay(item: Historial): number {
+    return this.getCostoEnvio(item);
+  }
+
+  getCasaInfo(item: Historial): { id: string, nombre: string, telefono?: string, precioEmpanada: number, costoEnvio: number } | null {
+    return item.casa || null;
+  }
+
+  // Métodos principales simplificados
+  calcularTotalEmpanadas(amigos: Amigo[]): number {
+    return amigos.reduce((total, amigo) => {
+      return total + amigo.pedido.reduce((subTotal, pedido) => subTotal + pedido.cantidad, 0);
+    }, 0);
+  }
+
+  calcularTotalSinEnvio(item: Historial): number {
+    const amigos = this.getAmigos(item);
+    const costoEmpanada = this.getCostoEmpanada(item);
+    return amigos.reduce((total, amigo) => {
+      return total + amigo.pedido.reduce((subTotal, pedido) => subTotal + pedido.cantidad * costoEmpanada, 0);
+    }, 0);
+  }
+
+  calcularTotalConEnvio(item: Historial): number {
+    const totalSinEnvio = this.calcularTotalSinEnvio(item);
+    const costoEnvio = this.getCostoEnvio(item);
+    return totalSinEnvio + costoEnvio;
+  }
+
+  calcularTotalEmpanadasAmigo(amigo: Amigo): number {
+    return amigo.pedido.reduce((total, p) => total + p.cantidad, 0);
+  }
+
+  calcularCostoEmpanadasAmigo(amigo: Amigo, historialItem: Historial): number {
+    const costoEmpanada = this.getCostoEmpanada(historialItem);
+    return amigo.pedido.reduce((total, p) => total + p.cantidad * costoEmpanada, 0);
+  }
+
+  calcularTotalAmigo(amigo: Amigo, item: Historial): number {
+    const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, item);
+    const costoEnvio = this.calcularCostoEnvioAmigo(item);
+    return costoEmpanadas + costoEnvio;
+  }
+
+  calcularCostoEnvioAmigo(item: Historial): number {
+    const gruposPago = this.amigosService.getGruposPago();
+    const totalUnidadesPago = this.calcularTotalUnidadesPago(item, gruposPago);
+    const costoEnvio = this.getCostoEnvio(item);
+    return totalUnidadesPago > 0 ? costoEnvio / totalUnidadesPago : 0;
+  }
+
+  private calcularTotalUnidadesPago(item: Historial, gruposPago: GrupoPago[]): number {
+    let totalGrupos = 0;
+    let amigosEnGrupos = new Set<string>();
+    const amigosItem = this.getAmigos(item);
+
+    // Contar grupos que tienen miembros con pedidos
+    gruposPago.forEach(grupo => {
+      const miembrosConPedidos = amigosItem.filter(amigo => 
+        grupo.miembros.includes(amigo.nombre) && amigo.pedido.length > 0
+      );
+      if (miembrosConPedidos.length > 0) {
+        totalGrupos++;
+        miembrosConPedidos.forEach(amigo => amigosEnGrupos.add(amigo.nombre));
+      }
+    });
+
+    // Contar amigos individuales (no en grupos) con pedidos
+    const amigosIndividuales = amigosItem.filter(amigo => 
+      !amigosEnGrupos.has(amigo.nombre) && amigo.pedido.length > 0
+    ).length;
+
+    return totalGrupos + amigosIndividuales;
   }
 
   // Calcula los grupos y amigos individuales para un pedido específico
@@ -57,17 +219,19 @@ export class HistorialComponent implements OnInit {
     const gruposPago = this.amigosService.getGruposPago();
     const grupos: GrupoCalculado[] = [];
     const individuales: Amigo[] = [];
+    const amigosItem = this.getAmigos(item);
 
     // Crear un mapa de amigos procesados para evitar duplicados
     const amigosProcessados = new Set<string>();
 
     // Calcular el costo de envío por unidad de pago (grupos + individuales)
     const totalUnidadesPago = this.calcularTotalUnidadesPago(item, gruposPago);
-    const costoEnvioPorUnidad = totalUnidadesPago > 0 ? item.costoEnvio / totalUnidadesPago : 0;
+    const costoEnvioItem = this.getCostoEnvio(item);
+    const costoEnvioPorUnidad = totalUnidadesPago > 0 ? costoEnvioItem / totalUnidadesPago : 0;
 
     // Procesar grupos
     gruposPago.forEach(grupo => {
-      const miembrosDelGrupo = item.pedido.filter(amigo => 
+      const miembrosDelGrupo = amigosItem.filter(amigo => 
         grupo.miembros.includes(amigo.nombre) && amigo.pedido.length > 0
       );
 
@@ -94,7 +258,7 @@ export class HistorialComponent implements OnInit {
     });
 
     // Procesar amigos individuales (no en grupos)
-    item.pedido.forEach(amigo => {
+    amigosItem.forEach(amigo => {
       if (!amigosProcessados.has(amigo.nombre) && amigo.pedido.length > 0) {
         individuales.push(amigo);
       }
@@ -103,86 +267,23 @@ export class HistorialComponent implements OnInit {
     return { grupos, individuales };
   }
 
-  // Método auxiliar para calcular el total de unidades de pago
-  private calcularTotalUnidadesPago(item: Historial, gruposPago: GrupoPago[]): number {
-    let totalGrupos = 0;
-    let amigosEnGrupos = new Set<string>();
-
-    // Contar grupos que tienen miembros con pedidos
-    gruposPago.forEach(grupo => {
-      const miembrosConPedidos = item.pedido.filter(amigo => 
-        grupo.miembros.includes(amigo.nombre) && amigo.pedido.length > 0
-      );
-      if (miembrosConPedidos.length > 0) {
-        totalGrupos++;
-        miembrosConPedidos.forEach(amigo => amigosEnGrupos.add(amigo.nombre));
-      }
-    });
-
-    // Contar amigos individuales (no en grupos) con pedidos
-    const amigosIndividuales = item.pedido.filter(amigo => 
-      !amigosEnGrupos.has(amigo.nombre) && amigo.pedido.length > 0
-    ).length;
-
-    return totalGrupos + amigosIndividuales;
-  }
-
-  // Calcula el total de empanadas en un pedido
-  calcularTotalEmpanadas(pedido: Amigo[]): number {
-    let total = 0;
-    pedido.forEach(amigo => {
-      total += this.calcularTotalEmpanadasAmigo(amigo);
-    });
-    return total;
-  }
-
-  // Calcula el total del pedido (incluyendo costo de envío)
-  calcularTotalPedido(historialItem: Historial): number {
-    const totalCostos = historialItem.pedido.reduce((total, amigo) => {
-      return total + this.calcularCostoEmpanadasAmigo(amigo, historialItem);
-    }, 0);
-    return totalCostos + historialItem.costoEnvio;
-  }
-
-  // Calcula el total de empanadas de un amigo
-  calcularTotalEmpanadasAmigo(amigo: Amigo): number {
-    return amigo.pedido.reduce((total, p) => total + p.cantidad, 0);
-  }
-
-  // Calcula el costo de las empanadas de un amigo
-  calcularCostoEmpanadasAmigo(amigo: Amigo, historialItem: Historial): number {
-    return amigo.pedido.reduce((total, p) => total + p.cantidad * historialItem.costoEmpanada, 0);
-  }
-
-  // Calcula el costo de envío por amigo/grupo
-  calcularCostoEnvioAmigo(item: Historial): number {
-    const gruposPago = this.amigosService.getGruposPago();
-    const totalUnidadesPago = this.calcularTotalUnidadesPago(item, gruposPago);
-    return totalUnidadesPago > 0 ? item.costoEnvio / totalUnidadesPago : 0;
-  }
-
-  // Calcula el total que debe pagar un amigo (empanadas + envío)
-  calcularTotalAmigo(amigo: any, item: any): number {
-    const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, item);
-    const costoEnvio = this.calcularCostoEnvioAmigo(item);
+  calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
+    const resumen: { [gusto: string]: number } = {};
+    const amigos = this.getAmigos(item);
     
-    return costoEmpanadas + costoEnvio;
-  }
+    amigos.forEach(amigo => {
+      amigo.pedido.forEach(pedido => {
+        if (resumen[pedido.gusto]) {
+          resumen[pedido.gusto] += pedido.cantidad;
+        } else {
+          resumen[pedido.gusto] = pedido.cantidad;
+        }
+      });
+    });
 
-  calcularTotalSinEnvio(item: Historial): number {
-    return item.pedido.reduce((total, amigo) => {
-      return total + amigo.pedido.reduce((subTotal, pedido) => subTotal + pedido.cantidad * item.costoEmpanada, 0);
-    }, 0);
-  }
-
-  calcularTotalConEnvio(item: Historial): number {
-    const totalSinEnvio = this.calcularTotalSinEnvio(item);
-    return totalSinEnvio + item.costoEnvio;
-  }
-
-  // Mostrar modal de confirmación para eliminar historial
-  confirmarEliminacion(index: number) {
-    this.historialAEliminarIndex = index;
+    return Object.keys(resumen)
+      .map(gusto => ({ gusto, cantidad: resumen[gusto] }))
+      .sort((a, b) => b.cantidad - a.cantidad);
   }
 
   togglePanel(index: number) {
@@ -193,164 +294,92 @@ export class HistorialComponent implements OnInit {
     return this.historial.length > 0;
   }
 
-  hayPedidosActivosItem(item: any): boolean {
-    return item.pedido && item.pedido.length > 0;
+  hayPedidosActivosItem(item: Historial): boolean {
+    const amigos = this.getAmigos(item);
+    return amigos.length > 0;
   }
 
   eliminarHistorial() {
-    this.historial.splice(this.indexToDelete || 0, 1);
-    localStorage.setItem('historial', JSON.stringify(this.historial));
-  }
-
-  // Calcula el resumen de gustos y sus cantidades en el pedido
-calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
-  const resumen: { [gusto: string]: number } = {};
-
-  item.pedido.forEach(amigo => {
-    amigo.pedido.forEach(p => {
-      if (resumen[p.gusto]) {
-        resumen[p.gusto] += p.cantidad;
-      } else {
-        resumen[p.gusto] = p.cantidad;
+    if (this.indexToDelete !== null) {
+      this.historial.splice(this.indexToDelete, 1);
+      this.panelOpenState.splice(this.indexToDelete, 1);
+      
+      // Guardar ambos formatos por compatibilidad
+      const historialAntiguo = this.historial.filter(item => item.fechaPedido);
+      const historialNuevo = this.historial.filter(item => item.fecha);
+      
+      if (historialAntiguo.length > 0) {
+        localStorage.setItem('historial', JSON.stringify(historialAntiguo));
       }
-    });
-  });
-
-  return Object.keys(resumen).map(gusto => ({
-    gusto: gusto,
-    cantidad: resumen[gusto]
-  }));
-}
-
-// Método para formatear el contenido del pedido para compartir
-sharePedido(item: Historial) {
-  if (!navigator.share) {
-    alert('La API de Web Share no está disponible en este navegador.');
-    return;
+      if (historialNuevo.length > 0) {
+        localStorage.setItem('historiales', JSON.stringify(historialNuevo));
+      }
+      
+      this.indexToDelete = null;
+    }
   }
 
-  const fecha = new Date(item.fechaPedido).toLocaleString();
-  const totalEmpanadas = this.calcularTotalEmpanadas(item.pedido);
-  const totalSinEnvio = this.calcularTotalSinEnvio(item).toLocaleString();
-  const costoEnvio = item.costoEnvio.toLocaleString();
-  const totalConEnvio = this.calcularTotalConEnvio(item).toLocaleString();
-    const { grupos, individuales } = this.getGruposYAmigosIndividuales(item);
+  sharePedido(item: Historial) {
+    const fecha = this.getFecha(item).toLocaleString();
+    const amigos = this.getAmigos(item);
+    const totalEmpanadas = this.calcularTotalEmpanadas(amigos);
+    const totalSinEnvio = this.calcularTotalSinEnvio(item);
+    const costoEnvio = this.getCostoEnvio(item);
+    const totalConEnvio = this.calcularTotalConEnvio(item);
+    const casaInfo = this.getCasaInfo(item);
 
-    // Construir el mensaje completo con detalles por grupo y amigo
-    let mensajeCompleto = `🍥 PEDIDO DE EMPANADAS 🍥\n`;
-    mensajeCompleto += `📅 Fecha: ${fecha}\n\n`;
-
-    // Detalles por grupos de pago
-    if (grupos.length > 0) {
-      mensajeCompleto += `👥 GRUPOS DE PAGO:\n`;
-      mensajeCompleto += `${'='.repeat(35)}\n`;
-      
-      grupos.forEach(grupoCalculado => {
-        mensajeCompleto += `\n🔗 ${grupoCalculado.grupo.nombre.toUpperCase()}\n`;
-        mensajeCompleto += `💳 Paga: ${grupoCalculado.grupo.pagador}\n`;
-        mensajeCompleto += `👥 Miembros:\n`;
-        
-        grupoCalculado.miembros.forEach(amigo => {
-          const totalEmpanadasAmigo = this.calcularTotalEmpanadasAmigo(amigo);
-          const costoEmpanadasAmigo = this.calcularCostoEmpanadasAmigo(amigo, item);
-          
-          mensajeCompleto += `   • ${amigo.nombre} (${totalEmpanadasAmigo} empanadas):\n`;
-          amigo.pedido.forEach(pedido => {
-            const subtotal = pedido.cantidad * item.costoEmpanada;
-            mensajeCompleto += `     - ${pedido.cantidad}x ${pedido.gusto} = $${subtotal.toLocaleString()}\n`;
-          });
-          mensajeCompleto += `     Subtotal: $${costoEmpanadasAmigo.toLocaleString()}\n`;
-        });
-        
-        mensajeCompleto += `💰 Total empanadas: $${grupoCalculado.totalCosto.toLocaleString()}\n`;
-        mensajeCompleto += `🚚 Envío: $${this.calcularCostoEnvioAmigo(item).toLocaleString()}\n`;
-        mensajeCompleto += `💳 TOTAL A PAGAR: $${grupoCalculado.totalConEnvio.toLocaleString()}\n`;
-        mensajeCompleto += `${'-'.repeat(25)}\n`;
-      });
+    let mensaje = `📋 PEDIDO DE EMPANADAS\n`;
+    mensaje += `📅 Fecha: ${fecha}\n`;
+    
+    if (casaInfo) {
+      mensaje += `🏪 Casa: ${casaInfo.nombre}\n`;
+      if (casaInfo.telefono) {
+        mensaje += `📞 Teléfono: ${casaInfo.telefono}\n`;
+      }
     }
+    
+    mensaje += `\n🍥 RESUMEN POR SABORES:\n`;
+    const resumenGustos = this.calcularResumenGustos(item);
+    resumenGustos.forEach(resumen => {
+      mensaje += `• ${resumen.cantidad}x ${resumen.gusto}\n`;
+    });
 
-    // Detalles por amigos individuales
-    if (individuales.length > 0) {
-      mensajeCompleto += `\n👤 AMIGOS INDIVIDUALES:\n`;
-      mensajeCompleto += `${'='.repeat(35)}\n`;
-      
-      individuales.forEach(amigo => {
-        const totalEmpanadasAmigo = this.calcularTotalEmpanadasAmigo(amigo);
-        const costoEmpanadasAmigo = this.calcularCostoEmpanadasAmigo(amigo, item);
-        const totalAmigo = this.calcularTotalAmigo(amigo, item);
-        
-        mensajeCompleto += `\n👤 ${amigo.nombre.toUpperCase()}\n`;
-        mensajeCompleto += `📦 Empanadas (${totalEmpanadasAmigo} unidades):\n`;
+    mensaje += `\n👥 DETALLE POR PERSONA:\n`;
+    amigos.forEach(amigo => {
+      if (amigo.pedido.length > 0) {
+        const totalAmigo = this.calcularTotalEmpanadasAmigo(amigo);
+        const costoAmigo = this.calcularCostoEmpanadasAmigo(amigo, item);
+        mensaje += `\n${amigo.nombre} (${totalAmigo} empanadas - $${costoAmigo}):\n`;
         
         amigo.pedido.forEach(pedido => {
-          const subtotal = pedido.cantidad * item.costoEmpanada;
-          mensajeCompleto += `   • ${pedido.cantidad}x ${pedido.gusto} = $${subtotal.toLocaleString()}\n`;
+          const costoEmpanada = this.getCostoEmpanada(item);
+          const subtotal = pedido.cantidad * costoEmpanada;
+          mensaje += `  • ${pedido.cantidad}x ${pedido.gusto} = $${subtotal}\n`;
         });
-        
-        mensajeCompleto += `💰 Subtotal empanadas: $${costoEmpanadasAmigo.toLocaleString()}\n`;
-        mensajeCompleto += `🚚 Envío: $${this.calcularCostoEnvioAmigo(item).toLocaleString()}\n`;
-        mensajeCompleto += `💳 TOTAL A PAGAR: $${totalAmigo.toLocaleString()}\n`;
-        mensajeCompleto += `${'-'.repeat(25)}\n`;
-      });
-    }
-
-    // Resumen general del pedido
-    mensajeCompleto += `\n📊 RESUMEN GENERAL:\n`;
-    mensajeCompleto += `${'='.repeat(35)}\n`;
-    
-  const gustosCantidad = this.contarGustos(item);
-  Object.keys(gustosCantidad).forEach(gusto => {
-      mensajeCompleto += `🍥 ${gustosCantidad[gusto]} empanadas de ${gusto}\n`;
-  });
-    
-    mensajeCompleto += `\n📈 TOTALES:\n`;
-    mensajeCompleto += `🍥 Total empanadas: ${totalEmpanadas} unidades\n`;
-    mensajeCompleto += `💰 Costo empanadas: $${totalSinEnvio}\n`;
-    mensajeCompleto += `🚚 Costo de envío: $${costoEnvio}\n`;
-    mensajeCompleto += `💳 TOTAL GENERAL: $${totalConEnvio}\n`;
-    
-    if (grupos.length > 0) {
-      mensajeCompleto += `\n💡 RESUMEN DE PAGOS:\n`;
-      grupos.forEach(grupoCalculado => {
-        mensajeCompleto += `${grupoCalculado.grupo.pagador}: $${grupoCalculado.totalConEnvio.toLocaleString()}\n`;
-      });
-      individuales.forEach(amigo => {
-        const totalAmigo = this.calcularTotalAmigo(amigo, item);
-        mensajeCompleto += `${amigo.nombre}: $${totalAmigo.toLocaleString()}\n`;
-      });
-    }
-    
-    mensajeCompleto += `\n🍴 ¡Buen provecho! 🍴`;
-
-  const shareData = {
-      title: `Pedido de Empanadas - ${fecha}`,
-      text: mensajeCompleto,
-  };
-
-  navigator.share(shareData)
-    .then(() => console.log('Pedido compartido con éxito.'))
-    .catch((error) => console.error('Error al compartir el pedido:', error));
-}
-
-// Método para contar la cantidad de empanadas por gusto en un pedido
-contarGustos(item: Historial): { [gusto: string]: number } {
-  const gustosCantidad: { [gusto: string]: number } = {};
-
-  item.pedido.forEach(amigo => {
-    amigo.pedido.forEach(empanada => {
-      if (!gustosCantidad[empanada.gusto]) {
-        gustosCantidad[empanada.gusto] = 0;
       }
-      gustosCantidad[empanada.gusto] += empanada.cantidad;
     });
-  });
 
-  return gustosCantidad;
-}
+    mensaje += `\n💰 TOTALES:\n`;
+    mensaje += `🍥 Total empanadas: ${totalEmpanadas}\n`;
+    mensaje += `💵 Subtotal: $${totalSinEnvio}\n`;
+    mensaje += `🚚 Envío: $${costoEnvio}\n`;
+    mensaje += `💳 TOTAL: $${totalConEnvio}`;
 
-// Método para realizar una llamada
-makeCall() {
-  const phoneNumber = '45816761';
-  window.location.href = `tel:${phoneNumber}`;
-}
+    if (navigator.share) {
+      navigator.share({
+        title: 'Pedido de Empanadas',
+        text: mensaje
+      });
+    } else {
+      navigator.clipboard.writeText(mensaje).then(() => {
+        alert('¡Pedido copiado al portapapeles!');
+      }).catch(() => {
+        alert(mensaje);
+      });
+    }
+  }
+
+  makeCall() {
+    alert('Función de llamada no implementada');
+  }
 }

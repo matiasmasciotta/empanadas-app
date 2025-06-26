@@ -13,14 +13,18 @@
         <div *ngIf="hayPedidosActivosItem(item)" class="card mb-3 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center" (click)="togglePanel(i)" style="cursor: pointer;">
                 <div>
-                    <strong>📅 {{ item.fechaPedido | date:'dd/MM/yyyy, HH:mm' }}</strong>
+                    <strong>📅 {{ getFechaDisplay(item) | date:'dd/MM/yyyy, HH:mm' }}</strong>
+                    <div *ngIf="getCasaInfo(item)" class="small text-muted">
+                        <i class="bi bi-shop"></i> {{ getCasaInfo(item)?.nombre }}
+                        <span *ngIf="getCasaInfo(item)?.telefono"> • {{ getCasaInfo(item)?.telefono }}</span>
+                    </div>
                 </div>
                 <div class="text-end">
                     <small>
-                        <strong>🍥 {{ calcularTotalEmpanadas(item.pedido) }} empanadas</strong> 
+                        <strong>🍥 {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }} empanadas</strong> 
                         - <strong>${{ calcularTotalSinEnvio(item) | number }}</strong>
                         <br>
-                        <i>🚚 + ${{ item.costoEnvio }} de envío</i>
+                        <i>🚚 + ${{ getCostoEnvioDisplay(item) }} de envío</i>
                     </small>
                     <br>
                     <strong style="font-size: larger;" class="text-success">💳 Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
@@ -72,9 +76,9 @@
                                                 <div>
                                                     <strong>{{ amigo.nombre }}</strong>
                                                     <ul class="list-unstyled ms-3 mt-1">
-                                                        <li *ngFor="let pedido of amigo.pedido" class="small">
-                                                            • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * item.costoEmpanada) | number }}
-                                                        </li>
+                                                                                                    <li *ngFor="let pedido of amigo.pedido" class="small">
+                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number }}
+                                            </li>
                                                     </ul>
                                                 </div>
                                                 <div class="text-end">
@@ -122,7 +126,7 @@
                                     <div class="col-md-8">
                                         <ul class="list-unstyled">
                                             <li *ngFor="let pedido of amigo.pedido" class="mb-1">
-                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * item.costoEmpanada) | number }}
+                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number }}
                                             </li>
                                         </ul>
                                     </div>
@@ -151,9 +155,9 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="text-end">
-                                    <div class="mb-1"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(item.pedido) }}</div>
+                                    <div class="mb-1"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }}</div>
                                     <div class="mb-1"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
-                                    <div class="mb-1"><strong>Envío:</strong> ${{ item.costoEnvio | number }}</div>
+                                    <div class="mb-1"><strong>Envío:</strong> ${{ getCostoEnvioDisplay(item) | number }}</div>
                                     <div class="fs-5"><strong class="text-success">Total:</strong> ${{ calcularTotalConEnvio(item) | number }}</div>
                                 </div>
                             </div>
