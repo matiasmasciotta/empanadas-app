@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { GrupoPago } from '../../models/grupo-pago';
 import { AmigosService } from '../amigos/amigos.service';
+import { CasasEmpanadasService } from '../../services/casas-empanadas.service';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 interface Pedido {
   gusto: string;
@@ -56,7 +59,12 @@ export class HistorialComponent implements OnInit {
   panelOpenState: boolean[] = [];
   indexToDelete: number | null = null;
 
-  constructor(private amigosService: AmigosService) {}
+  constructor(
+    private amigosService: AmigosService,
+    private casasService: CasasEmpanadasService,
+    private localStorageService: LocalStorageService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     // Cargar historial antiguo
@@ -179,7 +187,7 @@ export class HistorialComponent implements OnInit {
 
   calcularTotalAmigo(amigo: Amigo, item: Historial): number {
     const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, item);
-    const costoEnvio = this.calcularCostoEnvioAmigo(item);
+    const costoEnvio = this.calcularCostoEnvioSimple(item);
     return costoEmpanadas + costoEnvio;
   }
 
@@ -188,6 +196,14 @@ export class HistorialComponent implements OnInit {
     const totalUnidadesPago = this.calcularTotalUnidadesPago(item, gruposPago);
     const costoEnvio = this.getCostoEnvio(item);
     return totalUnidadesPago > 0 ? costoEnvio / totalUnidadesPago : 0;
+  }
+
+  calcularCostoEnvioSimple(item: Historial): number {
+    // Para pedidos nuevos que ya tienen la división calculada
+    const amigos = this.getAmigos(item);
+    const amigosConPedidos = amigos.filter(amigo => amigo.pedido.length > 0);
+    const costoEnvio = this.getCostoEnvio(item);
+    return amigosConPedidos.length > 0 ? costoEnvio / amigosConPedidos.length : 0;
   }
 
   private calcularTotalUnidadesPago(item: Historial, gruposPago: GrupoPago[]): number {
@@ -348,14 +364,23 @@ export class HistorialComponent implements OnInit {
     amigos.forEach(amigo => {
       if (amigo.pedido.length > 0) {
         const totalAmigo = this.calcularTotalEmpanadasAmigo(amigo);
-        const costoAmigo = this.calcularCostoEmpanadasAmigo(amigo, item);
-        mensaje += `\n${amigo.nombre} (${totalAmigo} empanadas - $${costoAmigo}):\n`;
+        const costoEmpanadas = this.calcularCostoEmpanadasAmigo(amigo, item);
+        const costoEnvioAmigo = this.calcularCostoEnvioSimple(item);
+        const costoTotal = costoEmpanadas + costoEnvioAmigo;
+        
+        mensaje += `\n${amigo.nombre} (${totalAmigo} empanadas):\n`;
         
         amigo.pedido.forEach(pedido => {
           const costoEmpanada = this.getCostoEmpanada(item);
           const subtotal = pedido.cantidad * costoEmpanada;
           mensaje += `  • ${pedido.cantidad}x ${pedido.gusto} = $${subtotal}\n`;
         });
+        
+        mensaje += `  Subtotal empanadas: $${costoEmpanadas}\n`;
+        if (costoEnvioAmigo > 0) {
+          mensaje += `  Envío: $${Math.round(costoEnvioAmigo)}\n`;
+          mensaje += `  Total: $${Math.round(costoTotal)}\n`;
+        }
       }
     });
 
@@ -381,5 +406,107 @@ export class HistorialComponent implements OnInit {
 
   makeCall() {
     alert('Función de llamada no implementada');
+  }
+
+  repetirPedido(item: Historial) {
+    if (confirm('¿Repetir este pedido? Se cargará automáticamente en la sección de pedidos y podrás modificarlo.')) {
+      try {
+        // 1. Limpiar pedido actual
+        this.limpiarPedidoActual();
+
+        // 2. Establecer la casa de empanadas
+        const casaInfo = this.getCasaInfo(item);
+        if (casaInfo) {
+          // Buscar la casa en las casas disponibles
+          const casaEncontrada = this.casasService.getCasaById(casaInfo.id);
+          if (casaEncontrada) {
+            this.localStorageService.setItem('casa-seleccionada', casaInfo.id);
+          } else {
+            // Si la casa no existe, crearla
+            const nuevaCasa = {
+              id: casaInfo.id,
+              nombre: casaInfo.nombre,
+              telefono: casaInfo.telefono || '',
+              color: '#007bff', // Color por defecto
+              precioEmpanada: casaInfo.precioEmpanada,
+              costoEnvio: casaInfo.costoEnvio,
+              gustos: this.extraerGustosDelPedido(item)
+            };
+            this.casasService.addCasa(nuevaCasa);
+            this.localStorageService.setItem('casa-seleccionada', casaInfo.id);
+          }
+        }
+
+        // 3. Cargar los pedidos de los amigos
+        const amigosHistorial = this.getAmigos(item);
+        const amigosActuales = this.amigosService.getAmigos();
+
+        amigosHistorial.forEach(amigoHistorial => {
+          // Buscar el amigo en la lista actual
+          const amigoActual = amigosActuales.find(a => a.nombre === amigoHistorial.nombre);
+          
+          if (amigoActual) {
+            // Si el amigo existe, agregar sus empanadas
+            if (!amigoActual.empanadas) {
+              amigoActual.empanadas = [];
+            }
+            
+            // Convertir los pedidos del historial al formato actual
+            amigoHistorial.pedido.forEach(pedidoHistorial => {
+              amigoActual.empanadas!.push({
+                gusto: pedidoHistorial.gusto,
+                cantidad: pedidoHistorial.cantidad
+              });
+            });
+
+            this.amigosService.updateAmigoData(amigoActual);
+          } else {
+            // Si el amigo no existe, crearlo
+            const nuevoAmigo = {
+              nombre: amigoHistorial.nombre,
+              empanadas: amigoHistorial.pedido.map(pedido => ({
+                gusto: pedido.gusto,
+                cantidad: pedido.cantidad
+              }))
+            };
+            this.amigosService.addAmigo(nuevoAmigo);
+          }
+        });
+
+        // 4. Navegar a la sección de pedidos
+        this.router.navigate(['/pedido']);
+        
+        alert('¡Pedido cargado exitosamente! Puedes modificarlo en la sección de pedidos.');
+
+      } catch (error) {
+        console.error('Error al repetir pedido:', error);
+        alert('Ocurrió un error al cargar el pedido. Por favor, inténtalo de nuevo.');
+      }
+    }
+  }
+
+  private limpiarPedidoActual() {
+    // Limpiar empanadas de todos los amigos
+    const amigos = this.amigosService.getAmigos();
+    amigos.forEach(amigo => {
+      amigo.empanadas = [];
+      this.amigosService.updateAmigoData(amigo);
+    });
+    
+    // Limpiar casa seleccionada
+    this.localStorageService.removeItem('casa-seleccionada');
+  }
+
+  private extraerGustosDelPedido(item: Historial): string[] {
+    const gustosSet = new Set<string>();
+    const amigos = this.getAmigos(item);
+    
+    amigos.forEach(amigo => {
+      amigo.pedido.forEach(pedido => {
+        gustosSet.add(pedido.gusto);
+      });
+    });
+
+    return Array.from(gustosSet);
   }
 }

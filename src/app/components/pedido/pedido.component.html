@@ -73,12 +73,31 @@
           </h6>
         </div>
         <div class="card-body">
-          <select class="form-select" [(ngModel)]="amigoSeleccionado">
-            <option [ngValue]="null">Selecciona un amigo</option>
-            <option [ngValue]="amigo" *ngFor="let amigo of amigos">
-              {{ amigo.nombre }}
-            </option>
-          </select>
+          <!-- Combo con buscador para amigos -->
+          <div class="dropdown">
+            <input 
+              type="text" 
+              class="form-control dropdown-toggle" 
+              [(ngModel)]="busquedaAmigo"
+              (input)="filtrarAmigos()"
+              (focus)="mostrarDropdownAmigos = true"
+              (blur)="ocultarDropdownAmigos()"
+              placeholder="Buscar amigo..."
+              data-bs-toggle="dropdown"
+              autocomplete="off">
+            
+            <ul class="dropdown-menu w-100" [class.show]="mostrarDropdownAmigos && amigosFiltrados.length > 0">
+              <li *ngFor="let amigo of amigosFiltrados">
+                <button 
+                  class="dropdown-item" 
+                  [class.amigo-activo]="tieneEmpanadas(amigo)"
+                  type="button"
+                  (mousedown)="seleccionarAmigo(amigo)">
+                  {{ amigo.nombre }}{{ tieneEmpanadas(amigo) ? ' (activo)' : '' }}
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -93,12 +112,31 @@
         <div class="card-body">
           <div class="row">
             <div class="col-8">
-              <select class="form-select" [(ngModel)]="gustoSeleccionado" [disabled]="!amigoSeleccionado">
-                <option [ngValue]="null">Selecciona un gusto</option>
-                <option [ngValue]="gusto" *ngFor="let gusto of gustosDisponibles">
-                  {{ gusto }}
-                </option>
-              </select>
+              <!-- Combo con buscador para gustos -->
+              <div class="dropdown">
+                <input 
+                  type="text" 
+                  class="form-control dropdown-toggle" 
+                  [(ngModel)]="busquedaGusto"
+                  (input)="filtrarGustos()"
+                  (focus)="mostrarDropdownGustos = true"
+                  (blur)="ocultarDropdownGustos()"
+                  [disabled]="!amigoSeleccionado"
+                  placeholder="Buscar gusto..."
+                  data-bs-toggle="dropdown"
+                  autocomplete="off">
+                
+                <ul class="dropdown-menu w-100" [class.show]="mostrarDropdownGustos && gustosFiltrados.length > 0">
+                  <li *ngFor="let gusto of gustosFiltrados">
+                    <button 
+                      class="dropdown-item" 
+                      type="button"
+                      (mousedown)="seleccionarGusto(gusto)">
+                      {{ gusto }}
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div class="col-4">
               <button 
@@ -133,7 +171,15 @@
                   <h6 class="mb-0">
                     <i class="bi bi-person-circle text-primary"></i> {{ amigo.nombre }}
                   </h6>
-                  <span class="badge bg-success">${{ getCostoAmigo(amigo) }}</span>
+                  <div class="text-end">
+                    <div class="small text-muted">
+                      Empanadas: ${{ getCostoAmigo(amigo) }}
+                      <span *ngIf="getCostoEnvioPorAmigo() > 0">
+                        + Envío: ${{ getCostoEnvioPorAmigo() | number:'1.0-0' }}
+                      </span>
+                    </div>
+                    <span class="badge bg-success">${{ getCostoAmigoConEnvio(amigo) | number:'1.0-0' }}</span>
+                  </div>
                 </div>
                 
                 <div class="row g-2">
@@ -191,9 +237,14 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
                       <strong>{{ amigo.nombre }}</strong>
-                      <div class="small text-muted">{{ getTotalEmpanadasAmigo(amigo) }} empanadas</div>
+                      <div class="small text-muted">
+                        {{ getTotalEmpanadasAmigo(amigo) }} empanadas
+                        <span *ngIf="getCostoEnvioPorAmigo() > 0">
+                          + envío (${{ getCostoEnvioPorAmigo() | number:'1.0-0' }})
+                        </span>
+                      </div>
                     </div>
-                    <span class="fw-bold">${{ getCostoAmigo(amigo) }}</span>
+                    <span class="fw-bold">${{ getCostoAmigoConEnvio(amigo) | number:'1.0-0' }}</span>
                   </div>
                 </div>
               </div>
@@ -228,7 +279,12 @@
               </div>
               <div class="d-flex justify-content-between mb-2">
                 <span>Envío:</span>
-                <span>${{ getCostoEnvio() }}</span>
+                <span>
+                  ${{ getCostoEnvio() }}
+                  <small class="text-muted d-block">
+                    (${{ getCostoEnvioPorAmigo() | number:'1.0-0' }} por persona)
+                  </small>
+                </span>
               </div>
               <hr>
               <div class="d-flex justify-content-between fs-5">

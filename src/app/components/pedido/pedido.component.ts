@@ -28,6 +28,14 @@ export class PedidoComponent implements OnInit {
   // Selecciones para los combos
   amigoSeleccionado: Amigo | null = null;
   gustoSeleccionado: string | null = null;
+  
+  // Variables para los combos con buscador
+  busquedaAmigo: string = '';
+  busquedaGusto: string = '';
+  amigosFiltrados: Amigo[] = [];
+  gustosFiltrados: string[] = [];
+  mostrarDropdownAmigos: boolean = false;
+  mostrarDropdownGustos: boolean = false;
 
   constructor(
     private casasService: CasasEmpanadasService,
@@ -44,12 +52,17 @@ export class PedidoComponent implements OnInit {
     this.casasEmpanadas = this.casasService.getCasas();
     this.amigos = this.amigosService.getAmigos();
     
+    // Ordenar amigos alfabéticamente
+    this.amigos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    this.amigosFiltrados = [...this.amigos];
+    
     // Si hay una casa previamente seleccionada, mantenerla
     const casaSeleccionadaId = this.localStorageService.getItem('casa-seleccionada');
     if (casaSeleccionadaId) {
       this.casaSeleccionada = this.casasService.getCasaById(casaSeleccionadaId);
       if (this.casaSeleccionada) {
-        this.gustosDisponibles = this.casaSeleccionada.gustos;
+        this.gustosDisponibles = this.casaSeleccionada.gustos.sort();
+        this.gustosFiltrados = [...this.gustosDisponibles];
       }
     }
   }
@@ -91,12 +104,69 @@ export class PedidoComponent implements OnInit {
     }
 
     if (this.casaSeleccionada) {
-      this.gustosDisponibles = this.casaSeleccionada.gustos;
+      this.gustosDisponibles = this.casaSeleccionada.gustos.sort();
+      this.gustosFiltrados = [...this.gustosDisponibles];
       this.localStorageService.setItem('casa-seleccionada', this.casaSeleccionada.id);
     } else {
       this.gustosDisponibles = [];
+      this.gustosFiltrados = [];
       this.localStorageService.removeItem('casa-seleccionada');
     }
+  }
+
+  // Métodos para los filtros
+  filtrarAmigos(): void {
+    if (!this.busquedaAmigo.trim()) {
+      this.amigosFiltrados = [...this.amigos];
+    } else {
+      this.amigosFiltrados = this.amigos.filter(amigo => 
+        amigo.nombre.toLowerCase().includes(this.busquedaAmigo.toLowerCase())
+      );
+    }
+    this.mostrarDropdownAmigos = true;
+  }
+
+  filtrarGustos(): void {
+    if (!this.busquedaGusto.trim()) {
+      this.gustosFiltrados = [...this.gustosDisponibles];
+    } else {
+      this.gustosFiltrados = this.gustosDisponibles.filter(gusto => 
+        gusto.toLowerCase().includes(this.busquedaGusto.toLowerCase())
+      );
+    }
+    this.mostrarDropdownGustos = true;
+  }
+
+  seleccionarAmigo(amigo: Amigo): void {
+    this.amigoSeleccionado = amigo;
+    this.busquedaAmigo = amigo.nombre;
+    this.mostrarDropdownAmigos = false;
+    
+    // Limpiar selección de gusto al cambiar de amigo
+    this.gustoSeleccionado = null;
+    this.busquedaGusto = '';
+  }
+
+  seleccionarGusto(gusto: string): void {
+    this.gustoSeleccionado = gusto;
+    this.busquedaGusto = gusto;
+    this.mostrarDropdownGustos = false;
+  }
+
+  ocultarDropdownAmigos(): void {
+    setTimeout(() => {
+      this.mostrarDropdownAmigos = false;
+    }, 150);
+  }
+
+  ocultarDropdownGustos(): void {
+    setTimeout(() => {
+      this.mostrarDropdownGustos = false;
+    }, 150);
+  }
+
+  tieneEmpanadas(amigo: Amigo): boolean {
+    return !!(amigo.empanadas && amigo.empanadas.length > 0);
   }
 
   agregarEmpanada(): void {
@@ -136,6 +206,10 @@ export class PedidoComponent implements OnInit {
     
     // Limpiar selecciones
     this.gustoSeleccionado = null;
+    this.busquedaGusto = '';
+    
+    // Actualizar filtros para reflejar el estado "activo"
+    this.filtrarAmigos();
   }
 
   eliminarEmpanada(amigo: Amigo, index: number): void {
@@ -169,6 +243,25 @@ export class PedidoComponent implements OnInit {
     if (!amigo.empanadas || !this.casaSeleccionada) return 0;
     const totalEmpanadas = this.getTotalEmpanadasAmigo(amigo);
     return totalEmpanadas * this.casaSeleccionada.precioEmpanada;
+  }
+
+  getCostoAmigoConEnvio(amigo: Amigo): number {
+    const costoEmpanadas = this.getCostoAmigo(amigo);
+    const costoEnvioDividido = this.getCostoEnvioPorAmigo();
+    return costoEmpanadas + costoEnvioDividido;
+  }
+
+  getCostoEnvioPorAmigo(): number {
+    if (!this.casaSeleccionada) return 0;
+    const amigosConEmpanadas = this.getAmigosConEmpanadas();
+    if (amigosConEmpanadas === 0) return 0;
+    return this.casaSeleccionada.costoEnvio / amigosConEmpanadas;
+  }
+
+  getAmigosConEmpanadas(): number {
+    return this.amigos.filter(amigo => 
+      amigo.empanadas && amigo.empanadas.length > 0
+    ).length;
   }
 
   getTotalEmpanadas(): number {
@@ -248,13 +341,18 @@ export class PedidoComponent implements OnInit {
         amigo.empanadas.forEach(emp => {
           resumen += `  - ${emp.gusto} x${emp.cantidad}\n`;
         });
-        resumen += `  Subtotal: $${this.getCostoAmigo(amigo)}\n\n`;
+        resumen += `  Subtotal empanadas: $${this.getCostoAmigo(amigo)}\n`;
+        if (this.getCostoEnvioPorAmigo() > 0) {
+          resumen += `  Envío: $${Math.round(this.getCostoEnvioPorAmigo())}\n`;
+          resumen += `  Total: $${Math.round(this.getCostoAmigoConEnvio(amigo))}\n`;
+        }
+        resumen += `\n`;
       }
     });
 
     resumen += `Total empanadas: ${this.getTotalEmpanadas()}\n`;
     resumen += `Subtotal: $${this.getTotalSinEnvio()}\n`;
-    resumen += `Envío: $${this.getCostoEnvio()}\n`;
+    resumen += `Envío: $${this.getCostoEnvio()} (dividido entre ${this.getAmigosConEmpanadas()} personas)\n`;
     resumen += `TOTAL: $${this.getTotalConEnvio()}`;
 
     return resumen;
@@ -276,7 +374,10 @@ export class PedidoComponent implements OnInit {
         amigo.empanadas && amigo.empanadas.length > 0
       ).map(amigo => ({
         nombre: amigo.nombre,
-        empanadas: amigo.empanadas || []
+        empanadas: amigo.empanadas || [],
+        costoEmpanadas: this.getCostoAmigo(amigo),
+        costoEnvio: this.getCostoEnvioPorAmigo(),
+        costoTotal: this.getCostoAmigoConEnvio(amigo)
       })),
       totales: {
         empanadas: this.getTotalEmpanadas(),

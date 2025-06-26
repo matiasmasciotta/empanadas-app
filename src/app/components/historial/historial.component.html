@@ -32,6 +32,11 @@
                 </div>
             
                 <div class="btn-group">
+                    <!-- Botón para repetir pedido -->
+                    <button (click)="repetirPedido(item)" type="button" class="btn btn-outline-warning btn-sm" title="Repetir pedido">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                
                     <!-- Botón para eliminar el historial -->
                     <button (click)="indexToDelete = i" type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                         <i class="bi bi-trash"></i>
@@ -84,7 +89,13 @@
                                                 <div class="text-end">
                                                     <small class="text-muted">{{ calcularTotalEmpanadasAmigo(amigo) }} empanadas</small>
                                                     <br>
-                                                    <strong>${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</strong>
+                                                    <div class="small text-muted">
+                                                        Empanadas: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}
+                                                        <span *ngIf="calcularCostoEnvioSimple(item) > 0">
+                                                            + Envío: ${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }}
+                                                        </span>
+                                                    </div>
+                                                    <strong>${{ (calcularCostoEmpanadasAmigo(amigo, item) + calcularCostoEnvioSimple(item)) | number:'1.0-0' }}</strong>
                                                 </div>
                                             </div>
                                         </div>
@@ -134,7 +145,7 @@
                                         <div class="small text-muted">
                                             <div>Empanadas: {{ calcularTotalEmpanadasAmigo(amigo) }}</div>
                                             <div>Subtotal: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</div>
-                                            <div>Envío: ${{ calcularCostoEnvioAmigo(item) | number }}</div>
+                                            <div>Envío: ${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -157,7 +168,12 @@
                                 <div class="text-end">
                                     <div class="mb-1"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }}</div>
                                     <div class="mb-1"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
-                                    <div class="mb-1"><strong>Envío:</strong> ${{ getCostoEnvioDisplay(item) | number }}</div>
+                                    <div class="mb-1">
+                                        <strong>Envío:</strong> ${{ getCostoEnvioDisplay(item) | number }}
+                                        <small class="text-muted d-block">
+                                            (${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }} por persona)
+                                        </small>
+                                    </div>
                                     <div class="fs-5"><strong class="text-success">Total:</strong> ${{ calcularTotalConEnvio(item) | number }}</div>
                                 </div>
                             </div>
