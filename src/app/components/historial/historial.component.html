@@ -11,45 +11,42 @@
 
     <ng-container *ngFor="let item of historial; let i = index">
         <div *ngIf="hayPedidosActivosItem(item)" class="card mb-3 shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center" (click)="togglePanel(i)" style="cursor: pointer;">
-                <div>
-                    <strong>📅 {{ getFechaDisplay(item) | date:'dd/MM/yyyy, HH:mm' }}</strong>
-                    <div *ngIf="getCasaInfo(item)" class="small text-muted">
-                        <i class="bi bi-shop"></i> {{ getCasaInfo(item)?.nombre }}
-                        <span *ngIf="getCasaInfo(item)?.telefono"> • {{ getCasaInfo(item)?.telefono }}</span>
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="flex-grow-1" (click)="togglePanel(i)" style="cursor: pointer;">
+                        <strong>📅 {{ getFechaDisplay(item) | date:'dd/MM/yyyy, HH:mm' }}</strong>
+                        <div *ngIf="getCasaInfo(item)" class="small text-muted">
+                            <i class="bi bi-shop"></i> {{ getCasaInfo(item)?.nombre }}
+                            <span *ngIf="getCasaInfo(item)?.telefono"> • {{ getCasaInfo(item)?.telefono }}</span>
+                        </div>
+                    </div>
+                    <div class="text-end" (click)="togglePanel(i)" style="cursor: pointer;">
+                        <div class="small text-muted">{{ calcularTotalEmpanadas(getAmigosDisplay(item)) }} empanadas</div>
+                        <div class="fw-bold text-success">${{ calcularTotalConEnvio(item) | number }}</div>
+                        <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi small"></i>
                     </div>
                 </div>
-                <div class="text-end">
-                    <small>
-                        <strong>🍥 {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }} empanadas</strong> 
-                        - <strong>${{ calcularTotalSinEnvio(item) | number }}</strong>
-                        <br>
-                        <i>🚚 + ${{ getCostoEnvioDisplay(item) }} de envío</i>
-                    </small>
-                    <br>
-                    <strong style="font-size: larger;" class="text-success">💳 Total: ${{ calcularTotalConEnvio(item) | number }}</strong>
-                    <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi ml-2"></i>
-                </div>
-            
-                <div class="btn-group">
-                    <!-- Botón para repetir pedido -->
-                    <button (click)="repetirPedido(item)" type="button" class="btn btn-outline-warning btn-sm" title="Repetir pedido">
+                
+                <!-- Botones en fila horizontal más compactos -->
+                <div class="d-flex gap-1 justify-content-center">
+                    <button (click)="repetirPedido(item)" type="button" class="btn btn-outline-warning btn-sm flex-fill" title="Repetir pedido">
                         <i class="bi bi-arrow-repeat"></i>
+                        <span class="d-none d-sm-inline ms-1">Repetir</span>
                     </button>
-                
-                    <!-- Botón para eliminar el historial -->
-                    <button (click)="indexToDelete = i" type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                
-                    <!-- Botón para compartir -->
-                    <button (click)="sharePedido(item)" type="button" class="btn btn-outline-primary btn-sm">
+                    
+                    <button (click)="sharePedido(item)" type="button" class="btn btn-outline-primary btn-sm flex-fill">
                         <i class="bi bi-share"></i>
+                        <span class="d-none d-sm-inline ms-1">Compartir</span>
                     </button>
-                
-                    <!-- Botón para llamar -->
-                    <button (click)="makeCall()" type="button" class="btn btn-outline-success btn-sm">
+                    
+                    <button (click)="makeCall()" type="button" class="btn btn-outline-success btn-sm flex-fill">
                         <i class="bi bi-telephone"></i>
+                        <span class="d-none d-sm-inline ms-1">Llamar</span>
+                    </button>
+                    
+                    <button (click)="indexToDelete = i" type="button" class="btn btn-outline-danger btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="bi bi-trash"></i>
+                        <span class="d-none d-sm-inline ms-1">Eliminar</span>
                     </button>
                 </div>
             </div>
@@ -58,7 +55,7 @@
                 <div class="card-body">
                     <!-- Mostrar grupos de pago -->
                     <ng-container *ngFor="let grupoCalculado of getGruposYAmigosIndividuales(item).grupos">
-                        <div class="card mb-3 border-0" [style.background]="'linear-gradient(135deg, ' + grupoCalculado.grupo.color + '15, ' + grupoCalculado.grupo.color + '05)'">
+                        <div class="card mb-2 border-0" [style.background]="'linear-gradient(135deg, ' + grupoCalculado.grupo.color + '15, ' + grupoCalculado.grupo.color + '05)'">
                             <div class="card-header" [style.background]="grupoCalculado.grupo.color + '20'" [style.border-left]="'4px solid ' + grupoCalculado.grupo.color">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">
@@ -122,7 +119,7 @@
 
                     <!-- Mostrar amigos individuales -->
                     <ng-container *ngFor="let amigo of getGruposYAmigosIndividuales(item).individuales">
-                        <div class="card mb-3 border-0" style="background: linear-gradient(135deg, #f8f9fa, #ffffff);">
+                        <div class="card mb-2 border-0" style="background: linear-gradient(135deg, #f8f9fa, #ffffff);">
                             <div class="card-header bg-light">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">
@@ -154,27 +151,28 @@
                     </ng-container>
                   
                     <!-- Resumen general del pedido -->
-                    <div class="alert alert-info mt-4">
-                        <h6><i class="bi bi-clipboard-data"></i> Resumen general del pedido:</h6>
+                    <div class="alert alert-info mt-3">
+                        <h6 class="mb-3"><i class="bi bi-clipboard-data"></i> Resumen del pedido:</h6>
                         <div class="row">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <div class="small"><strong>Por sabores:</strong></div>
+                                <ul class="list-unstyled small">
                                     <li *ngFor="let resumen of calcularResumenGustos(item)" class="mb-1">
                                         🍥 {{ resumen.cantidad }}x {{ resumen.gusto }}
                                     </li>
                                 </ul>
                             </div>
-                            <div class="col-md-6">
-                                <div class="text-end">
-                                    <div class="mb-1"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }}</div>
-                                    <div class="mb-1"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
-                                    <div class="mb-1">
+                            <div class="col-12 col-md-6">
+                                <div class="text-md-end">
+                                    <div class="mb-1 small"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }}</div>
+                                    <div class="mb-1 small"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
+                                    <div class="mb-2 small">
                                         <strong>Envío:</strong> ${{ getCostoEnvioDisplay(item) | number }}
-                                        <small class="text-muted d-block">
+                                        <div class="text-muted" style="font-size: 0.8rem;">
                                             (${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }} por persona)
-                                        </small>
+                                        </div>
                                     </div>
-                                    <div class="fs-5"><strong class="text-success">Total:</strong> ${{ calcularTotalConEnvio(item) | number }}</div>
+                                    <div class="fw-bold text-success">Total: ${{ calcularTotalConEnvio(item) | number }}</div>
                                 </div>
                             </div>
                         </div>
