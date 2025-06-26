@@ -203,37 +203,37 @@ export class HistorialComponent implements OnInit {
   }
 
   // Calcula el resumen de gustos y sus cantidades en el pedido
-  calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
-    const resumen: { [gusto: string]: number } = {};
+calcularResumenGustos(item: Historial): { gusto: string, cantidad: number }[] {
+  const resumen: { [gusto: string]: number } = {};
 
-    item.pedido.forEach(amigo => {
-      amigo.pedido.forEach(p => {
-        if (resumen[p.gusto]) {
-          resumen[p.gusto] += p.cantidad;
-        } else {
-          resumen[p.gusto] = p.cantidad;
-        }
-      });
+  item.pedido.forEach(amigo => {
+    amigo.pedido.forEach(p => {
+      if (resumen[p.gusto]) {
+        resumen[p.gusto] += p.cantidad;
+      } else {
+        resumen[p.gusto] = p.cantidad;
+      }
     });
+  });
 
-    return Object.keys(resumen).map(gusto => ({
-      gusto: gusto,
-      cantidad: resumen[gusto]
-    }));
+  return Object.keys(resumen).map(gusto => ({
+    gusto: gusto,
+    cantidad: resumen[gusto]
+  }));
+}
+
+// Método para formatear el contenido del pedido para compartir
+sharePedido(item: Historial) {
+  if (!navigator.share) {
+    alert('La API de Web Share no está disponible en este navegador.');
+    return;
   }
 
-  // Método para formatear el contenido del pedido para compartir
-  sharePedido(item: Historial) {
-    if (!navigator.share) {
-      alert('La API de Web Share no está disponible en este navegador.');
-      return;
-    }
-
-    const fecha = new Date(item.fechaPedido).toLocaleString();
-    const totalEmpanadas = this.calcularTotalEmpanadas(item.pedido);
-    const totalSinEnvio = this.calcularTotalSinEnvio(item).toLocaleString();
-    const costoEnvio = item.costoEnvio.toLocaleString();
-    const totalConEnvio = this.calcularTotalConEnvio(item).toLocaleString();
+  const fecha = new Date(item.fechaPedido).toLocaleString();
+  const totalEmpanadas = this.calcularTotalEmpanadas(item.pedido);
+  const totalSinEnvio = this.calcularTotalSinEnvio(item).toLocaleString();
+  const costoEnvio = item.costoEnvio.toLocaleString();
+  const totalConEnvio = this.calcularTotalConEnvio(item).toLocaleString();
     const { grupos, individuales } = this.getGruposYAmigosIndividuales(item);
 
     // Construir el mensaje completo con detalles por grupo y amigo
@@ -298,10 +298,10 @@ export class HistorialComponent implements OnInit {
     mensajeCompleto += `\n📊 RESUMEN GENERAL:\n`;
     mensajeCompleto += `${'='.repeat(35)}\n`;
     
-    const gustosCantidad = this.contarGustos(item);
-    Object.keys(gustosCantidad).forEach(gusto => {
+  const gustosCantidad = this.contarGustos(item);
+  Object.keys(gustosCantidad).forEach(gusto => {
       mensajeCompleto += `🍥 ${gustosCantidad[gusto]} empanadas de ${gusto}\n`;
-    });
+  });
     
     mensajeCompleto += `\n📈 TOTALES:\n`;
     mensajeCompleto += `🍥 Total empanadas: ${totalEmpanadas} unidades\n`;
@@ -322,35 +322,35 @@ export class HistorialComponent implements OnInit {
     
     mensajeCompleto += `\n🍴 ¡Buen provecho! 🍴`;
 
-    const shareData = {
+  const shareData = {
       title: `Pedido de Empanadas - ${fecha}`,
       text: mensajeCompleto,
-    };
+  };
 
-    navigator.share(shareData)
-      .then(() => console.log('Pedido compartido con éxito.'))
-      .catch((error) => console.error('Error al compartir el pedido:', error));
-  }
+  navigator.share(shareData)
+    .then(() => console.log('Pedido compartido con éxito.'))
+    .catch((error) => console.error('Error al compartir el pedido:', error));
+}
 
-  // Método para contar la cantidad de empanadas por gusto en un pedido
-  contarGustos(item: Historial): { [gusto: string]: number } {
-    const gustosCantidad: { [gusto: string]: number } = {};
+// Método para contar la cantidad de empanadas por gusto en un pedido
+contarGustos(item: Historial): { [gusto: string]: number } {
+  const gustosCantidad: { [gusto: string]: number } = {};
 
-    item.pedido.forEach(amigo => {
-      amigo.pedido.forEach(empanada => {
-        if (!gustosCantidad[empanada.gusto]) {
-          gustosCantidad[empanada.gusto] = 0;
-        }
-        gustosCantidad[empanada.gusto] += empanada.cantidad;
-      });
+  item.pedido.forEach(amigo => {
+    amigo.pedido.forEach(empanada => {
+      if (!gustosCantidad[empanada.gusto]) {
+        gustosCantidad[empanada.gusto] = 0;
+      }
+      gustosCantidad[empanada.gusto] += empanada.cantidad;
     });
+  });
 
-    return gustosCantidad;
-  }
+  return gustosCantidad;
+}
 
-  // Método para realizar una llamada
-  makeCall() {
-    const phoneNumber = '45816761';
-    window.location.href = `tel:${phoneNumber}`;
-  }
+// Método para realizar una llamada
+makeCall() {
+  const phoneNumber = '45816761';
+  window.location.href = `tel:${phoneNumber}`;
+}
 }

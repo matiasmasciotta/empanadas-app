@@ -1,123 +1,220 @@
-<div class="">
-  <div class="alert alert-success text-center" role="alert">
-    <h5>Realizar pedido</h5>
+<div class="container-fluid">
+  <!-- Título con información de la casa activa -->
+  <div class="alert alert-warning text-center mb-4" role="alert">
+    <h5>🛒 Pedido de Empanadas</h5>
+    <div *ngIf="hayPedidoActivo && casaActiva" class="mt-2">
+      <strong>Pedido activo para: {{ casaActiva.nombre }}</strong>
+      <div class="text-muted small">
+        <i class="bi bi-currency-dollar"></i> ${{ casaActiva.precioEmpanada }}/empanada 
+        <span class="mx-2">•</span>
+        <i class="bi bi-truck"></i> ${{ casaActiva.costoEnvio }} envío
+      </div>
+    </div>
   </div>
 
-  <!-- Sección de selección de amigo, gusto, cantidad y costos -->
-  <div class="alert alert-light animate-card" role="alert">
-    <!-- Fila para seleccionar amigo y gusto -->
-    <div class="row mb-3">
-      <div class="col-md-6 col-sm-6">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon1">Amigo:</span>
-          <select class="form-select" [(ngModel)]="selectedAmigo" aria-label="Seleccionar amigo">
-            <option *ngFor="let amigo of amigos" [ngValue]="amigo">
-              {{ amigo.nombre }} 
-              <span *ngIf="amigo.pedido.length > 0" class="text-success">(activo)</span>
+  <!-- Selección de casa de empanadas -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h6 class="mb-0">
+        <i class="bi bi-shop"></i> Casa de Empanadas
+      </h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-8">
+          <select 
+            class="form-select" 
+            [(ngModel)]="casaSeleccionada" 
+            (change)="onCasaChange()"
+            [disabled]="hayPedidoActivo">
+            <option [ngValue]="null">Selecciona una casa de empanadas</option>
+            <option [ngValue]="casa" *ngFor="let casa of casasEmpanadas">
+              {{ casa.nombre }}
             </option>
           </select>
+          
+          <!-- Alerta cuando hay pedido activo -->
+          <div *ngIf="hayPedidoActivo" class="alert alert-info mt-2 mb-0">
+            <i class="bi bi-info-circle"></i>
+            No puedes cambiar de casa mientras hay pedidos activos
+          </div>
         </div>
-      </div>
-
-      <div class="col-md-6 col-sm-6">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon2">Gusto:</span>
-          <select class="form-select" [(ngModel)]="selectedGusto" aria-label="Seleccionar gusto">
-            <option *ngFor="let gusto of gustos" [value]="gusto">{{ gusto }}</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Fila para cantidad, costo de empanada y costo de envío -->
-    <div class="row mb-3 align-items-center">
-      <div class="col-md-4 d-flex align-items-center">
-        <span class="input-group-text" id="basic-addon3">Cantidad:</span>
-        &nbsp;
-        <button type="button" class="btn btn-outline-secondary" (click)="decrementarCantidad()">
-          <i class="bi bi-dash"></i>
-        </button>
-        <span class="mx-2">{{ cantidad }}</span>
-        <button type="button" class="btn btn-outline-secondary" (click)="incrementarCantidad()">
-          <i class="bi bi-plus"></i>
-        </button>
-      </div>
-      <div>
-        <hr>
-      </div>
-      <div class="col-md-4">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon4">Costo Empanada:</span>
-          <input id="costoEmpanada" class="form-control" type="number" (ngModelChange)="SetCostoEmpanada($event)" [(ngModel)]="costoPorEmpanada" aria-label="Costo de empanada" />
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon5">Costo Envío:</span>
-          <input id="costoEnvio" class="form-control" type="number" (ngModelChange)="SetCostoEnvio($event)" [(ngModel)]="costoEnvio" aria-label="Costo de envío" />
+        
+        <!-- Información de precios (solo informativa) -->
+        <div class="col-md-4" *ngIf="casaSeleccionada">
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="border rounded p-2 bg-light">
+                <i class="bi bi-currency-dollar text-success"></i>
+                <div class="small">Por empanada</div>
+                <strong>${{ casaSeleccionada.precioEmpanada }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-2 bg-light">
+                <i class="bi bi-truck text-primary"></i>
+                <div class="small">Envío</div>
+                <strong>${{ casaSeleccionada.costoEnvio }}</strong>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <button type="button" class="btn btn-outline-dark mt-3" (click)="agregarPedido()" [disabled]="!selectedAmigo || !selectedGusto">Agregar Pedido</button>
   </div>
 
-  <!-- Resumen del pedido -->
-  <h3 class="mt-4">Resumen del Pedido</h3>
-  <div class="row">
-    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let amigo of amigos">
-      <div *ngIf="amigo.pedido.length > 0" class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          {{ amigo.nombre }}
-          <i (click)="eliminarPedido(amigo)" class="bi bi-trash text-danger" style="cursor: pointer;"></i>
+  <!-- Lista de amigos y sus pedidos -->
+  <div *ngIf="casaSeleccionada" class="row">
+    <div class="col-md-8">
+      <!-- Amigos -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-people"></i> Amigos
+          </h6>
         </div>
         <div class="card-body">
-          <ul class="list-unstyled">
-            <li *ngFor="let pedido of amigo.pedido">
-              <ng-container *ngIf="pedido.cantidad >= 0">
-                
-                <div class="d-flex align-items-center">
-                  {{ pedido.gusto }} x<span class="mx-2">{{ pedido.cantidad }}</span>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="decrementarGustoCantidad(amigo, pedido)">
-                    <i class="bi bi-dash"></i>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="incrementarGustoCantidad(amigo, pedido)">
-                    <i class="bi bi-plus"></i>
-                  </button>
+          <div class="row g-3">
+            <div class="col-12" *ngFor="let amigo of amigos">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="card-title mb-2">
+                        <i class="bi bi-person-circle"></i> {{ amigo.nombre }}
+                      </h6>
+                      
+                      <!-- Pedidos del amigo -->
+                      <div *ngIf="amigo.empanadas && amigo.empanadas.length > 0" class="mb-3">
+                        <div class="mb-2" *ngFor="let empanada of amigo.empanadas; let i = index">
+                          <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                            <span>{{ empanada.gusto }}</span>
+                            <div class="btn-group btn-group-sm">
+                              <button class="btn btn-outline-secondary" (click)="disminuirCantidad(amigo, i)">
+                                <i class="bi bi-dash"></i>
+                              </button>
+                              <span class="btn btn-outline-secondary disabled">{{ empanada.cantidad }}</span>
+                              <button class="btn btn-outline-secondary" (click)="aumentarCantidad(amigo, i)">
+                                <i class="bi bi-plus"></i>
+                              </button>
+                              <button class="btn btn-outline-danger" (click)="eliminarEmpanada(amigo, i)">
+                                <i class="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Total del amigo -->
+                        <div class="text-end">
+                          <strong>{{ getTotalEmpanadasAmigo(amigo) }} empanadas - ${{ getCostoAmigo(amigo) }}</strong>
+                        </div>
+                      </div>
+                      
+                      <!-- Mensaje cuando no tiene pedidos -->
+                      <div *ngIf="!amigo.empanadas || amigo.empanadas.length === 0" class="text-muted">
+                        Sin empanadas
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Botones para agregar gustos -->
+                  <div class="mt-3">
+                    <h6 class="small text-muted mb-2">Agregar empanadas:</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                      <button 
+                        *ngFor="let gusto of gustosDisponibles"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="agregarEmpanada(amigo, gusto)">
+                        <i class="bi bi-plus-circle"></i> {{ gusto }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </ng-container>
-            </li>
-          </ul>
-          <p class="mb-0">Cantidad: {{ calcularTotalEmpanadas(amigo) }} empanadas. {{ calcularTotalAmigo(amigo) | currency }}</p>
-          <p class="mb-0">+ {{ calcularProporcionEnvio(amigo) | currency }} de envío</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-footer text-end">
-          Total: {{ calcularTotalAmigo(amigo) + calcularProporcionEnvio(amigo) | currency }}
+      </div>
+    </div>
+
+    <!-- Resumen del pedido -->
+    <div class="col-md-4">
+      <div class="card position-sticky" style="top: 1rem;">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-receipt"></i> Resumen del Pedido
+            <span *ngIf="casaSeleccionada" class="small text-muted d-block">
+              {{ casaSeleccionada.nombre }}
+            </span>
+          </h6>
+        </div>
+        <div class="card-body">
+          <div *ngIf="hayAmigosConEmpanadas()">
+            <!-- Detalle por amigo -->
+            <div class="mb-3" *ngFor="let amigo of amigos">
+              <div *ngIf="amigo.empanadas && amigo.empanadas.length > 0">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-bold">{{ amigo.nombre }}</span>
+                  <span>${{ getCostoAmigo(amigo) }}</span>
+                </div>
+                <div class="small text-muted">
+                  {{ getTotalEmpanadasAmigo(amigo) }} empanadas
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Totales -->
+            <div class="mb-2">
+              <div class="d-flex justify-content-between">
+                <span>Total empanadas:</span>
+                <strong>{{ getTotalEmpanadas() }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Subtotal:</span>
+                <span>${{ getTotalSinEnvio() }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Envío:</span>
+                <span>${{ getCostoEnvio() }}</span>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between fs-5">
+              <strong>Total:</strong>
+              <strong class="text-success">${{ getTotalConEnvio() }}</strong>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-grid gap-2 mt-3">
+              <button class="btn btn-success" (click)="terminarPedido()">
+                <i class="bi bi-check-circle"></i> Confirmar Pedido
+              </button>
+              <button class="btn btn-outline-primary" (click)="compartirPedido()">
+                <i class="bi bi-share"></i> Compartir
+              </button>
+            </div>
+          </div>
+
+          <!-- Mensaje cuando no hay pedidos -->
+          <div *ngIf="!hayAmigosConEmpanadas()" class="text-center text-muted">
+            <i class="bi bi-cart-x fs-1"></i>
+            <p class="mt-2">No hay empanadas en el pedido</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Resumen de gustos -->
-  <div class="alert alert-info mt-4" role="alert">
-    <h5>Resumen de Gustos</h5>
-    <ul class="list-unstyled">
-      <li *ngFor="let gusto of (calcularTotalGustos() | keyvalue)">
-        {{ gusto.key }}: {{ gusto.value }} unidades
-      </li>
-    </ul>
+  <!-- Mensaje cuando no hay casa seleccionada -->
+  <div *ngIf="!casaSeleccionada" class="text-center text-muted mt-5">
+    <i class="bi bi-shop fs-1"></i>
+    <h5 class="mt-3">Selecciona una casa de empanadas</h5>
+    <p>Elige una casa de empanadas para comenzar tu pedido</p>
   </div>
 
-  <div class="alert alert-success mt-4" role="alert">
-    <p>Cantidad de empanadas: {{ calcularTotalEmpanadasTodos() }} u.</p>
-    <p>Costo de envío: {{ costoEnvio | currency }} de envío</p>
-    <h3>Total del pedido: {{ calcularTotalGeneral() + costoEnvio | currency }}</h3>
-  </div>
-  <hr>
-    <a class="btn btn-danger" (click)="confirmarPedido()" href="/historial" >Terminar pedido</a>
-  <hr>
-  <small>v1.0.3 made with <i style="color: red;" class="bi bi-balloon-heart"></i> by <b><a target="_blank" href="https://github.com/matiasmasciotta">github.com/matiasmasciotta</a></b> developer</small>
-  <br>
-  <br>
+  <br><br>
 </div>

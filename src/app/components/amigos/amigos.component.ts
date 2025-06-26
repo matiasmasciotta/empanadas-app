@@ -16,7 +16,7 @@ import { GrupoPago } from '../../models/grupo-pago';
 export class AmigosComponent implements OnInit {
   amigos: Amigo[] = [];
   gruposPago: GrupoPago[] = [];
-  newAmigo: Amigo = new Amigo('', []);
+  newAmigo: Amigo = { nombre: '', empanadas: [] };
   editingAmigo: Amigo | null = null;
   showEditModal: boolean = false;
   
@@ -43,7 +43,7 @@ export class AmigosComponent implements OnInit {
     if (this.newAmigo.nombre && !this.amigos.find(a => a.nombre.toUpperCase() === this.newAmigo.nombre.toUpperCase())) {
       this.amigosService.addAmigo(this.newAmigo);
       this.loadData();
-      this.newAmigo = new Amigo('', []);
+      this.newAmigo = { nombre: '', empanadas: [] };
     }
   }
 
@@ -71,7 +71,7 @@ export class AmigosComponent implements OnInit {
   }
 
   hasActivePedidos(amigo: Amigo): boolean {
-    return amigo.pedidos && amigo.pedidos.length > 0;
+    return amigo.empanadas ? amigo.empanadas.length > 0 : false;
   }
 
   // Métodos para grupos de pago

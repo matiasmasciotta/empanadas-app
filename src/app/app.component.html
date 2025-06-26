@@ -25,3 +25,39 @@
     </a>
   </div>
 </nav>
+
+<!-- Botón flotante de configuración -->
+<div class="config-fab">
+  <button class="btn btn-primary rounded-circle fab-main" 
+          (click)="toggleConfigMenu()"
+          [class.active]="showConfigMenu">
+    <i class="bi bi-gear-fill"></i>
+  </button>
+  
+  <!-- Menú de opciones -->
+  <div class="fab-menu" [class.show]="showConfigMenu">
+    <button class="btn btn-success fab-option" 
+            (click)="cargarDatosEjemplo()"
+            title="Cargar datos de ejemplo">
+      <i class="bi bi-download"></i>
+    </button>
+    
+    <button class="btn btn-warning fab-option" 
+            (click)="limpiarGustos()"
+            title="Limpiar gustos/casas">
+      <i class="bi bi-shop"></i>
+    </button>
+    
+    <button class="btn btn-danger fab-option" 
+            (click)="limpiarAmigos()"
+            title="Limpiar amigos">
+      <i class="bi bi-people-fill"></i>
+    </button>
+    
+    <button class="btn btn-dark fab-option" 
+            (click)="limpiarTodo()"
+            title="Limpiar todo">
+      <i class="bi bi-trash3-fill"></i>
+    </button>
+  </div>
+</div>

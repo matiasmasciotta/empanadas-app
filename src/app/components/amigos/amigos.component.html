@@ -135,7 +135,7 @@
     *ngIf="showEditModal"
     [title]="'Editar Amigo'"
     [content]="editingAmigo ? editingAmigo.nombre : ''"
-    (submit)="updateAmigo({ nombre: $event, pedidos: [] })"
+    (submit)="updateAmigo({ nombre: $event, empanadas: [] })"
     (close)="closeEditModal()">
   </app-modal>
 

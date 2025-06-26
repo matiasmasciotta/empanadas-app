@@ -1,59 +1,215 @@
 <div class="">
   <!-- Título de la sección -->
-  <div class="alert alert-danger text-center" role="alert">
-    <h5>Listado de Gustos</h5>
+  <div class="alert alert-warning text-center" role="alert">
+    <h5>🏪 Casas de Empanadas</h5>
   </div>
 
-  <!-- Contenedor de tarjetas de gustos con animación -->
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-lg-6 g-2">
-    <div class="col" *ngFor="let gusto of gustos">
-      <div class="card h-100 border-0 shadow-sm animate-card" 
-           style="border-radius: 15px; background: linear-gradient(135deg, #f7f7f7, #eaeaea);">
-        <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-3" style="position: relative;">
-          <div class="icon-container mb-3" 
-               style="background: #f8d7da; padding: 10px; border-radius: 50%; height: 55px; width: 55px;">
-            <i class="bi bi-egg-fried text-danger" style="font-size: 24px;"></i> <!-- Icono de comida -->
-          </div>
-          <p class="card-text mb-2" style="font-size: 0.7rem; font-weight: 500;">{{ gusto }}</p>
+  <!-- Botón para agregar nueva casa -->
+  <div class="text-center mb-4">
+    <button class="btn btn-success" (click)="openCasaModal()">
+      <i class="bi bi-plus-circle"></i> Nueva Casa de Empanadas
+    </button>
+  </div>
 
-          <!-- Efecto degradado en el footer -->
-          <div *ngIf="!defaultGustos.includes(gusto)" class="card-footer text-center py-2" style="background: linear-gradient(135deg, #00000018, #eaeaea); border-top: none; border-radius: 15px 15px 15px 15px;">
-            <!-- Iconos de edición y eliminación -->
-            <div class="d-flex justify-content-between w-100">
-              <i 
-                 (click)="openEditModal(gusto)" 
-                 class="bi bi-pencil-square text-secondary" 
-                 style="cursor: pointer;"></i>
-              &nbsp;&nbsp;
-              <i 
-                 (click)="removeGusto(gusto)" 
-                 class="bi bi-trash text-danger" 
-                 style="cursor: pointer;"></i>
+  <!-- Lista de casas con sus gustos -->
+  <div class="accordion" id="casasAccordion">
+    <div class="accordion-item mb-3" *ngFor="let casa of casasEmpanadas; let i = index">
+      <div class="card shadow-sm">
+        <div class="card-header" 
+             [style.background]="'linear-gradient(135deg, ' + (casa.color || '#f8f9fa') + '20, ' + (casa.color || '#f8f9fa') + '10)'"
+             [style.border-left]="'4px solid ' + (casa.color || '#6c757d')">
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-link p-0" 
+                      (click)="toggleCasa(casa.id)"
+                      [style.color]="casa.color || '#6c757d'">
+                <i class="bi" 
+                   [ngClass]="isCasaExpanded(casa.id) ? 'bi-chevron-down' : 'bi-chevron-right'"
+                   style="font-size: 1.2rem;"></i>
+              </button>
+              
+              <div class="ms-3">
+                <h6 class="mb-1">
+                  <i class="bi bi-shop" [style.color]="casa.color || '#6c757d'"></i>
+                  {{ casa.nombre }}
+                </h6>
+                <small class="text-muted">
+                  <i class="bi bi-list-ul"></i> {{ casa.gustos.length }} gustos
+                  <span *ngIf="casa.telefono" class="ms-3">
+                    <i class="bi bi-telephone"></i> {{ casa.telefono }}
+                  </span>
+                  <span class="ms-3">
+                    <i class="bi bi-currency-dollar"></i> ${{ casa.precioEmpanada }}
+                  </span>
+                  <span class="ms-2">
+                    <i class="bi bi-truck"></i> ${{ casa.costoEnvio }}
+                  </span>
+                </small>
+              </div>
             </div>
+
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-primary" (click)="openCasaModal(casa)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-outline-danger" (click)="deleteCasa(casa)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido expandible de la casa -->
+        <div *ngIf="isCasaExpanded(casa.id)" class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="text-muted mb-0">
+              <i class="bi bi-list-ul" [style.color]="casa.color || '#6c757d'"></i>
+              Gustos de {{ casa.nombre }}
+            </h6>
+            <button class="btn btn-outline-success btn-sm" (click)="openGustoModal(casa.id)">
+              <i class="bi bi-plus-circle"></i> Agregar Gusto
+            </button>
+          </div>
+
+          <!-- Lista de gustos -->
+          <div *ngIf="casa.gustos.length > 0" class="row g-2">
+            <div class="col-6 col-md-4 col-lg-3" *ngFor="let gusto of casa.gustos">
+              <div class="card border-0 h-100" 
+                   [style.background]="'linear-gradient(135deg, ' + (casa.color || '#f8f9fa') + '15, ' + (casa.color || '#f8f9fa') + '05)'"
+                   style="border-radius: 10px;">
+                <div class="card-body p-2 text-center">
+                  <div class="mb-2">
+                    <i class="bi bi-award" [style.color]="casa.color || '#6c757d'" style="font-size: 1.5rem;"></i>
+                  </div>
+                  <h6 class="card-title mb-2" style="font-size: 0.9rem;">{{ gusto }}</h6>
+                  <div class="btn-group btn-group-sm w-100">
+                    <button class="btn btn-outline-primary btn-sm" (click)="openGustoModal(casa.id, gusto)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" (click)="deleteGusto(casa.id, gusto)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje cuando no hay gustos -->
+          <div *ngIf="casa.gustos.length === 0" class="alert alert-light text-center">
+            <i class="bi bi-info-circle"></i>
+            No hay gustos agregados para esta casa.
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Sección para agregar un nuevo gusto -->
-  <div class="alert alert-light mt-4 text-center" role="alert">
-    <h5>Agrega un gusto</h5>
-    <div class="input-group mb-3">
-      <input [(ngModel)]="newGusto" class="form-control" placeholder="Nombre">
-      <button class="btn btn-outline-danger" (click)="addGusto()">Agregar</button>
+  <!-- Mensaje cuando no hay casas -->
+  <div *ngIf="casasEmpanadas.length === 0" class="alert alert-secondary text-center">
+    <i class="bi bi-shop"></i>
+    No hay casas de empanadas configuradas.
+  </div>
+
+  <br><br>
+
+  <!-- Modal para casa de empanadas -->
+  <div *ngIf="showCasaModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-shop"></i>
+            {{ editingCasa ? 'Editar Casa' : 'Nueva Casa de Empanadas' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeCasaModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre de la Casa *</label>
+            <input [(ngModel)]="newCasaNombre" class="form-control" placeholder="Ej: Rincón Norteño">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono (opcional)</label>
+            <input [(ngModel)]="newCasaTelefono" class="form-control" placeholder="Ej: 11 1234-5678">
+            <div class="form-text">Se usará para el botón de llamar en el historial</div>
+          </div>
+          
+          <!-- Configuración de precios -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="bi bi-currency-dollar"></i> Precio por empanada *
+                </label>
+                <input [(ngModel)]="newCasaPrecioEmpanada" 
+                       type="number" 
+                       class="form-control" 
+                       placeholder="1800"
+                       min="1"
+                       required>
+                <div class="form-text">Precio en pesos por empanada</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="bi bi-truck"></i> Costo de envío *
+                </label>
+                <input [(ngModel)]="newCasaCostoEnvio" 
+                       type="number" 
+                       class="form-control" 
+                       placeholder="500"
+                       min="0"
+                       required>
+                <div class="form-text">Costo de envío en pesos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCasaModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" 
+                  [disabled]="!newCasaNombre.trim()"
+                  (click)="saveCasa()">
+            {{ editingCasa ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <br>
-  <br>
-
-  <!-- Modal para editar gusto -->
-  <app-modal
-    *ngIf="showEditModal"
-    [title]="'Editar Gusto'"
-    [content]="editingGusto || ''"
-    (submit)="updateGusto($event)"
-    (close)="closeEditModal()">
-  </app-modal>
+  <!-- Modal para gustos -->
+  <div *ngIf="showGustoModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-award"></i>
+            {{ editingGusto ? 'Editar Gusto' : 'Nuevo Gusto' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeGustoModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre del Gusto</label>
+            <input [(ngModel)]="newGusto" class="form-control" placeholder="Ej: Carne, Pollo, Jamón y Queso">
+          </div>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            Casa: <strong>{{ getCasaById(selectedCasaId)?.nombre }}</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeGustoModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" 
+                  [disabled]="!newGusto.trim()"
+                  (click)="saveGusto()">
+            {{ editingGusto ? 'Actualizar' : 'Agregar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

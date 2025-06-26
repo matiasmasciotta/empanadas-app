@@ -1,6 +1,9 @@
-import { Gusto } from "./gusto";
+export interface Empanada {
+  gusto: string;
+  cantidad: number;
+}
 
-  // amigo.ts
-  export class Amigo {
-    constructor(public nombre: string, public pedidos: Gusto[]) {}
-  }
+export interface Amigo {
+  nombre: string;
+  empanadas?: Empanada[];
+}

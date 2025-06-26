@@ -43,6 +43,15 @@ export class AmigosService {
     }
   }
 
+  updateAmigoData(amigo: Amigo): void {
+    const amigos = this.getAmigos();
+    const index = amigos.findIndex(a => a.nombre.toUpperCase() === amigo.nombre.toUpperCase());
+    if (index > -1) {
+      amigos[index] = amigo;
+      this.saveAmigos(amigos);
+    }
+  }
+
   removeAmigo(nombre: string): void {
     const amigos = this.getAmigos();
     const index = amigos.findIndex(a => a.nombre.toUpperCase() === nombre.toUpperCase());

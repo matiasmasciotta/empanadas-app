@@ -2,16 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; // Importar CommonModule
 import { FormsModule } from '@angular/forms'; // Necesario para [(ngModel)]voy
 import { Historial } from '../../models/historial';
+import { CasaEmpanadas } from '../../models/casa-empanadas';
+import { CasasEmpanadasService } from '../../services/casas-empanadas.service';
+import { AmigosService } from '../amigos/amigos.service';
+import { LocalStorageService } from '../../services/local-storage.service';
+import { Amigo } from '../../models/amigo';
 
-interface Amigo {
-  nombre: string;
-  pedido: Pedido[];
-}
-
-interface Pedido {
-  gusto: string;
-  cantidad: number;
-}
 @Component({
   selector: 'app-pedido',
   standalone: true, // Si estás usando componentes independientes
@@ -21,192 +17,264 @@ interface Pedido {
 })
 export class PedidoComponent implements OnInit {
   amigos: Amigo[] = [];
-  gustos: string[] = [];
-  selectedAmigo: Amigo | null = null;
-  selectedGusto: string | null = null;
-  cantidad: number = 1;
-  costoPorEmpanada: number = 1800; // Input editable para el costo de empanadas
-  costoEnvio: number = 0; // Input editable para el costo de envío
-  totalEmpanadas: number = 0;
-  fechaPedido: any;
-
-  historial: Historial = { fechaPedido: new Date(), pedido: [], costoEmpanada: this.costoPorEmpanada, costoEnvio: this.costoEnvio };
-
-  ngOnInit() {
-    const gustosGuardados = localStorage.getItem('gustos');
-    const amigosGuardados = localStorage.getItem('amigos');
-    this.costoPorEmpanada = Number(localStorage.getItem('costoPorEmpanada')) || 0;
-    this.costoEnvio = Number (localStorage.getItem('costoEnvio')) || 0;
+  casasEmpanadas: CasaEmpanadas[] = [];
+  casaSeleccionada: CasaEmpanadas | null = null;
+  gustosDisponibles: string[] = [];
   
-    if (gustosGuardados) {
-      this.gustos = JSON.parse(gustosGuardados);
-    } else {
-      this.gustos = ['Carne', 'Pollo', 'Cheeseburguer', 'Panceta y Ciruela'];
-    }
-  
-    if (amigosGuardados) {
-      this.amigos = JSON.parse(amigosGuardados);
-      // Asegúrate de que cada amigo tenga un array de pedidos
-      this.amigos.forEach(amigo => {
-        if (!amigo.pedido) {
-          amigo.pedido = [];
-        }
-      });
-    } else {
-      this.amigos = [
-        { nombre: 'Matias', pedido: [] }, 
-        { nombre: 'Marisa', pedido: [] }, 
-        { nombre: 'Sara', pedido: [] }
-      ];
-    }
+  // Estados
+  hayPedidoActivo: boolean = false;
+  casaActiva: CasaEmpanadas | null = null;
+
+  constructor(
+    private casasService: CasasEmpanadasService,
+    private amigosService: AmigosService,
+    private localStorageService: LocalStorageService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadData();
+    this.detectarPedidoActivo();
   }
 
-  SetCostoEmpanada(value: number) {
-    localStorage.setItem("costoPorEmpanada", value.toString())
-  }
-
-  SetCostoEnvio(value: number){
-    localStorage.setItem("costoEnvio", value.toString())
-  }
-
-  agregarPedido() {
-    if (this.selectedAmigo && this.selectedGusto && this.cantidad > 0) {
-      const pedidoExistente = this.selectedAmigo.pedido.find(p => p.gusto === this.selectedGusto);
-      if (pedidoExistente) {
-        pedidoExistente.cantidad += this.cantidad;
-      } else {
-        this.selectedAmigo.pedido.push({ gusto: this.selectedGusto, cantidad: this.cantidad });
+  private loadData(): void {
+    this.casasEmpanadas = this.casasService.getCasas();
+    this.amigos = this.amigosService.getAmigos();
+    
+    // Si hay una casa previamente seleccionada, mantenerla
+    const casaSeleccionadaId = this.localStorageService.getItem('casa-seleccionada');
+    if (casaSeleccionadaId) {
+      this.casaSeleccionada = this.casasService.getCasaById(casaSeleccionadaId);
+      if (this.casaSeleccionada) {
+        this.gustosDisponibles = this.casaSeleccionada.gustos;
       }
-
-      localStorage.setItem('amigos', JSON.stringify(this.amigos));
-
-      this.selectedGusto = null;
-      this.cantidad = 1;
     }
   }
 
-  eliminarPedido(amigo: Amigo) {
-    if (amigo) {
-      amigo.pedido = [];
-      localStorage.setItem('amigos', JSON.stringify(this.amigos));
-    }
-  }
+  private detectarPedidoActivo(): void {
+    // Verificar si hay amigos con empanadas solicitadas
+    this.hayPedidoActivo = this.amigos.some(amigo => 
+      amigo.empanadas && amigo.empanadas.length > 0
+    );
 
-  calcularTotalAmigo(amigo: Amigo): number {
-    return amigo.pedido.reduce((total, item) => total + item.cantidad * this.costoPorEmpanada, 0);
-  }
-
-  calcularTotalEmpanadas(amigo: Amigo): number {
-    return amigo.pedido.reduce((total, item) => total + item.cantidad, 0);
-  }
-
-  calcularTotalEmpanadasTodos() {
-    let totalEmpanadas = 0;
-    
-    this.amigos.forEach(amigo => {
-      amigo.pedido.forEach(pedido => {
-        if (pedido.cantidad > 0) {
-          totalEmpanadas += pedido.cantidad;
+    if (this.hayPedidoActivo) {
+      // Encontrar la casa activa basada en los pedidos existentes
+      const amigoConPedido = this.amigos.find(amigo => 
+        amigo.empanadas && amigo.empanadas.length > 0
+      );
+      
+      if (amigoConPedido && amigoConPedido.empanadas && amigoConPedido.empanadas.length > 0) {
+        // Buscar la casa que contiene el gusto del primer pedido
+        const primerGusto = amigoConPedido.empanadas[0].gusto;
+        this.casaActiva = this.casasEmpanadas.find(casa => 
+          casa.gustos.includes(primerGusto)
+        ) || null;
+        
+        // Forzar la selección de la casa activa
+        if (this.casaActiva) {
+          this.casaSeleccionada = this.casaActiva;
+          this.gustosDisponibles = this.casaActiva.gustos;
         }
-      });
-    });
-    
-    return totalEmpanadas;
-  }
-
-  calcularTotalGeneral(): number {
-    // Solo contar amigos que tengan al menos un pedido
-    return this.amigos
-      .filter(amigo => amigo.pedido && amigo.pedido.length > 0)
-      .reduce((total, amigo) => total + this.calcularTotalAmigo(amigo), 0);
-  }
-  
-  calcularProporcionEnvio(amigo: Amigo): number {
-    const cantidadConPedidos = this.amigos.filter(a => a.pedido.length > 0).length;
-    const proporcionEnvio = cantidadConPedidos > 0 ? this.costoEnvio / cantidadConPedidos : 0;
-    return proporcionEnvio;
-  }
-
-  calcularProporcionEnvioTotal(): number {
-    return this.costoEnvio; // En total no se divide
-  }
-
-  incrementarCantidad() {
-    this.cantidad++;
-  }  
-
-  decrementarCantidad() {
-    if (this.cantidad > 0) {
-      this.cantidad--;
+      }
     }
   }
 
-  // Agregar al final del archivo .ts
-  calcularTotalGustos() {
-    const totalGustos: { [key: string]: number } = {};
+  onCasaChange(): void {
+    if (this.hayPedidoActivo) {
+      // No permitir cambiar si hay pedidos activos
+      this.casaSeleccionada = this.casaActiva;
+      alert('No puedes cambiar de casa de empanadas mientras hay pedidos activos. Termina el pedido actual o elimina todas las empanadas solicitadas.');
+      return;
+    }
+
+    if (this.casaSeleccionada) {
+      this.gustosDisponibles = this.casaSeleccionada.gustos;
+      this.localStorageService.setItem('casa-seleccionada', this.casaSeleccionada.id);
+    } else {
+      this.gustosDisponibles = [];
+      this.localStorageService.removeItem('casa-seleccionada');
+    }
+  }
+
+  agregarEmpanada(amigo: Amigo, gusto: string): void {
+    if (!this.casaSeleccionada) {
+      alert('Primero selecciona una casa de empanadas');
+      return;
+    }
+
+    if (!amigo.empanadas) {
+      amigo.empanadas = [];
+    }
+
+    amigo.empanadas.push({
+      gusto: gusto,
+      cantidad: 1
+    });
+
+    this.amigosService.updateAmigoData(amigo);
+    this.detectarPedidoActivo(); // Actualizar estado
+  }
+
+  eliminarEmpanada(amigo: Amigo, index: number): void {
+    if (amigo.empanadas) {
+      amigo.empanadas.splice(index, 1);
+      this.amigosService.updateAmigoData(amigo);
+      this.detectarPedidoActivo(); // Actualizar estado
+    }
+  }
+
+  aumentarCantidad(amigo: Amigo, index: number): void {
+    if (amigo.empanadas && amigo.empanadas[index]) {
+      amigo.empanadas[index].cantidad++;
+      this.amigosService.updateAmigoData(amigo);
+    }
+  }
+
+  disminuirCantidad(amigo: Amigo, index: number): void {
+    if (amigo.empanadas && amigo.empanadas[index] && amigo.empanadas[index].cantidad > 1) {
+      amigo.empanadas[index].cantidad--;
+      this.amigosService.updateAmigoData(amigo);
+    }
+  }
+
+  getTotalEmpanadasAmigo(amigo: Amigo): number {
+    if (!amigo.empanadas) return 0;
+    return amigo.empanadas.reduce((total, emp) => total + emp.cantidad, 0);
+  }
+
+  getCostoAmigo(amigo: Amigo): number {
+    if (!amigo.empanadas || !this.casaSeleccionada) return 0;
+    const totalEmpanadas = this.getTotalEmpanadasAmigo(amigo);
+    return totalEmpanadas * this.casaSeleccionada.precioEmpanada;
+  }
+
+  getTotalEmpanadas(): number {
+    return this.amigos.reduce((total, amigo) => total + this.getTotalEmpanadasAmigo(amigo), 0);
+  }
+
+  getTotalSinEnvio(): number {
+    if (!this.casaSeleccionada) return 0;
+    return this.getTotalEmpanadas() * this.casaSeleccionada.precioEmpanada;
+  }
+
+  getCostoEnvio(): number {
+    return this.casaSeleccionada?.costoEnvio || 0;
+  }
+
+  getTotalConEnvio(): number {
+    return this.getTotalSinEnvio() + this.getCostoEnvio();
+  }
+
+  hayAmigosConEmpanadas(): boolean {
+    return this.amigos.some(amigo => 
+      amigo.empanadas && amigo.empanadas.length > 0
+    );
+  }
+
+  terminarPedido(): void {
+    if (!this.hayAmigosConEmpanadas()) {
+      alert('No hay empanadas en el pedido');
+      return;
+    }
+
+    if (!this.casaSeleccionada) {
+      alert('Selecciona una casa de empanadas');
+      return;
+    }
+
+    const resumen = this.generarResumenPedido();
     
+    if (confirm('¿Confirmar el pedido?\n\n' + resumen)) {
+      this.guardarEnHistorial();
+      this.limpiarPedidoActual();
+      alert('¡Pedido confirmado y guardado en el historial!');
+    }
+  }
+
+  private generarResumenPedido(): string {
+    let resumen = `=== RESUMEN DEL PEDIDO ===\n`;
+    resumen += `Casa: ${this.casaSeleccionada?.nombre}\n`;
+    if (this.casaSeleccionada?.telefono) {
+      resumen += `Teléfono: ${this.casaSeleccionada.telefono}\n`;
+    }
+    resumen += `\n`;
+
     this.amigos.forEach(amigo => {
-      amigo.pedido.forEach(pedido => {
-        if (pedido.cantidad > 0) {  // Solo contar gustos con cantidad mayor a 0
-          if (totalGustos[pedido.gusto]) {
-            totalGustos[pedido.gusto] += pedido.cantidad;
-          } else {
-            totalGustos[pedido.gusto] = pedido.cantidad;
-          }
-        }
-      });
+      if (amigo.empanadas && amigo.empanadas.length > 0) {
+        resumen += `${amigo.nombre}:\n`;
+        amigo.empanadas.forEach(emp => {
+          resumen += `  - ${emp.gusto} x${emp.cantidad}\n`;
+        });
+        resumen += `  Subtotal: $${this.getCostoAmigo(amigo)}\n\n`;
+      }
     });
-    
-    return totalGustos;
+
+    resumen += `Total empanadas: ${this.getTotalEmpanadas()}\n`;
+    resumen += `Subtotal: $${this.getTotalSinEnvio()}\n`;
+    resumen += `Envío: $${this.getCostoEnvio()}\n`;
+    resumen += `TOTAL: $${this.getTotalConEnvio()}`;
+
+    return resumen;
   }
 
-  incrementarGustoCantidad(amigo: any, pedido: any) {
-    pedido.cantidad++;
-  }
-  
-  decrementarGustoCantidad(amigo: any, pedido: any) {
-    if (pedido.cantidad > 0) {
-      pedido.cantidad--;
-    }
-  }
+  private guardarEnHistorial(): void {
+    if (!this.casaSeleccionada) return;
 
-  actualizarLocalStorage() {
-    localStorage.setItem('amigos', JSON.stringify(this.amigos));
-  }
-
-  confirmarPedido() {
-    this.historial = {
-      fechaPedido: new Date(),
-      pedido: this.amigos,
-      costoEmpanada: this.costoPorEmpanada,
-      costoEnvio: this.costoEnvio
+    const historial = {
+      fecha: new Date().toISOString(),
+      casa: {
+        id: this.casaSeleccionada.id,
+        nombre: this.casaSeleccionada.nombre,
+        telefono: this.casaSeleccionada.telefono,
+        precioEmpanada: this.casaSeleccionada.precioEmpanada,
+        costoEnvio: this.casaSeleccionada.costoEnvio
+      },
+      amigos: this.amigos.filter(amigo => 
+        amigo.empanadas && amigo.empanadas.length > 0
+      ).map(amigo => ({
+        nombre: amigo.nombre,
+        empanadas: amigo.empanadas || []
+      })),
+      totales: {
+        empanadas: this.getTotalEmpanadas(),
+        subtotal: this.getTotalSinEnvio(),
+        envio: this.getCostoEnvio(),
+        total: this.getTotalConEnvio()
+      }
     };
-  
-    let actualHistorial = localStorage.getItem('historial');
-  
-    // Verifica si 'actualHistorial' es null antes de intentar parsearlo
-    let arrayHistorial: Historial[] = actualHistorial ? JSON.parse(actualHistorial) : [];
-  
-    // Agrega el historial actual al array
-    arrayHistorial.push(this.historial);
-  
-    // Actualiza el localStorage con el nuevo historial
-    localStorage.setItem('historial', JSON.stringify(arrayHistorial));
-  
-    console.log(this.historial);
-  
-    this.resetData();
+
+    const historialesPrevios = JSON.parse(localStorage.getItem('historiales') || '[]');
+    historialesPrevios.unshift(historial);
+    localStorage.setItem('historiales', JSON.stringify(historialesPrevios));
   }
 
-  resetData() {
-    this.amigos = [];
-    this.gustos = [];
-    this.historial = { fechaPedido: new Date(), pedido: [], costoEmpanada: this.costoPorEmpanada, costoEnvio: this.costoEnvio }; // Inicializa correctamente
-    this.selectedAmigo = null;
-    this.selectedGusto = null;
-    this.cantidad = 1;  // Cambié esto a 1 ya que puede ser confuso empezar con 0
-  
-    this.totalEmpanadas = 0;
-    this.fechaPedido = new Date();
+  private limpiarPedidoActual(): void {
+    this.amigos.forEach(amigo => {
+      amigo.empanadas = [];
+      this.amigosService.updateAmigoData(amigo);
+    });
+    
+    this.casaSeleccionada = null;
+    this.gustosDisponibles = [];
+    this.localStorageService.removeItem('casa-seleccionada');
+    this.detectarPedidoActivo(); // Actualizar estado
+  }
+
+  compartirPedido(): void {
+    const resumen = this.generarResumenPedido();
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Pedido de Empanadas',
+        text: resumen
+      });
+    } else {
+      // Fallback para navegadores que no soportan Web Share API
+      navigator.clipboard.writeText(resumen).then(() => {
+        alert('¡Resumen copiado al portapapeles!');
+      }).catch(() => {
+        // Si no se puede copiar, mostrar en alert
+        alert(resumen);
+      });
+    }
   }
 }

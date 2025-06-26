@@ -29,4 +29,141 @@
   .navbar {
     height: 65px; /* Ajusta este valor a tu preferencia */
     padding: 10px 0; /* Ajusta el padding superior e inferior */
+    z-index: 1050 !important; /* Asegurar que esté por encima de todo */
+    position: fixed !important; /* Forzar posición fija */
+    bottom: 0 !important; /* Pegada al fondo */
+    left: 0 !important; /* Desde el lado izquierdo */
+    right: 0 !important; /* Hasta el lado derecho */
+    width: 100% !important; /* Ancho completo */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3); /* Sombra hacia arriba para dar profundidad */
   }
+
+  /* Asegurar que el contenido principal tenga margen inferior para la navbar */
+  .main {
+    margin-bottom: 80px;
+    z-index: 1;
+  }
+
+  /* Estilos responsive para diferentes pantallas */
+  @media (max-width: 768px) {
+    .navbar {
+      height: 70px;
+      padding: 8px 0;
+    }
+    
+    .main {
+      margin-bottom: 80px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .navbar {
+      height: 65px;
+      padding: 10px 0;
+    }
+    
+    .main {
+      margin-bottom: 75px;
+    }
+  }
+
+  .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff !important;
+  }
+
+  .nav-link.active i {
+    color: #fff !important;
+  }
+
+  /* Estilos para el botón flotante de configuración */
+  .config-fab {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    z-index: 1050;
+  }
+
+  .fab-main {
+    width: 56px;
+    height: 56px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fab-main:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .fab-main.active {
+    transform: rotate(45deg);
+    background-color: #dc3545 !important;
+  }
+
+  .fab-main i {
+    font-size: 1.5rem;
+  }
+
+  .fab-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+  }
+
+  .fab-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .fab-option {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    animation: fadeInUp 0.3s ease forwards;
+  }
+
+  .fab-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .fab-option i {
+    font-size: 1.2rem;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Delay para animación escalonada */
+  .fab-option:nth-child(1) { animation-delay: 0.1s; }
+  .fab-option:nth-child(2) { animation-delay: 0.2s; }
+  .fab-option:nth-child(3) { animation-delay: 0.3s; }
+  .fab-option:nth-child(4) { animation-delay: 0.4s; }
