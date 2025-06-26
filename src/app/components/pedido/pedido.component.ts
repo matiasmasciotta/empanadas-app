@@ -137,6 +137,31 @@ export class PedidoComponent implements OnInit {
     this.mostrarDropdownGustos = true;
   }
 
+  // Nuevos métodos para mejorar el comportamiento de los combos
+  mostrarTodosAmigos(): void {
+    this.amigosFiltrados = [...this.amigos];
+    this.mostrarDropdownAmigos = true;
+  }
+
+  mostrarTodosGustos(): void {
+    this.gustosFiltrados = [...this.gustosDisponibles];
+    this.mostrarDropdownGustos = true;
+  }
+
+  limpiarBusquedaAmigo(): void {
+    this.busquedaAmigo = '';
+    this.amigoSeleccionado = null;
+    this.amigosFiltrados = [...this.amigos];
+    this.mostrarDropdownAmigos = true;
+  }
+
+  limpiarBusquedaGusto(): void {
+    this.busquedaGusto = '';
+    this.gustoSeleccionado = null;
+    this.gustosFiltrados = [...this.gustosDisponibles];
+    this.mostrarDropdownGustos = true;
+  }
+
   seleccionarAmigo(amigo: Amigo): void {
     this.amigoSeleccionado = amigo;
     this.busquedaAmigo = amigo.nombre;
@@ -194,7 +219,7 @@ export class PedidoComponent implements OnInit {
     
     if (existeGusto) {
       existeGusto.cantidad++;
-    } else {
+      } else {
       this.amigoSeleccionado.empanadas.push({
         gusto: this.gustoSeleccionado,
         cantidad: 1

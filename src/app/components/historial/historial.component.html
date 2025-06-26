@@ -22,7 +22,7 @@
                     </div>
                     <div class="text-end" (click)="togglePanel(i)" style="cursor: pointer;">
                         <div class="small text-muted">{{ calcularTotalEmpanadas(getAmigosDisplay(item)) }} empanadas</div>
-                        <div class="fw-bold text-success">${{ calcularTotalConEnvio(item) | number }}</div>
+                        <div class="fw-bold text-success">${{ calcularTotalConEnvio(item) | number:'1.0-0' }}</div>
                         <i [ngClass]="{'bi-chevron-down': !panelOpenState[i], 'bi-chevron-up': panelOpenState[i]}" class="bi small"></i>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                                     <div class="text-end">
                                         <small class="text-muted">💳 Paga: <strong>{{ grupoCalculado.grupo.pagador }}</strong></small>
                                         <br>
-                                        <strong class="text-success">Total: ${{ grupoCalculado.totalConEnvio | number }}</strong>
+                                        <strong class="text-success">Total: ${{ grupoCalculado.totalConEnvio | number:'1.0-0' }}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -79,7 +79,7 @@
                                                     <strong>{{ amigo.nombre }}</strong>
                                                     <ul class="list-unstyled ms-3 mt-1">
                                                                                                     <li *ngFor="let pedido of amigo.pedido" class="small">
-                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number }}
+                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number:'1.0-0' }}
                                             </li>
                                                     </ul>
                                                 </div>
@@ -87,7 +87,7 @@
                                                     <small class="text-muted">{{ calcularTotalEmpanadasAmigo(amigo) }} empanadas</small>
                                                     <br>
                                                     <div class="small text-muted">
-                                                        Empanadas: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}
+                                                        Empanadas: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number:'1.0-0' }}
                                                         <span *ngIf="calcularCostoEnvioSimple(item) > 0">
                                                             + Envío: ${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }}
                                                         </span>
@@ -105,10 +105,10 @@
                                                 </div>
                                                 <div class="small text-muted">Total empanadas</div>
                                                 <div class="h5 mb-2">{{ grupoCalculado.totalEmpanadas }}</div>
-                                                <div class="small text-muted">Subtotal: ${{ grupoCalculado.totalCosto | number }}</div>
-                                                <div class="small text-muted">Envío: ${{ calcularCostoEnvioAmigo(item) | number }}</div>
+                                                <div class="small text-muted">Subtotal: ${{ grupoCalculado.totalCosto | number:'1.0-0' }}</div>
+                                                <div class="small text-muted">Envío: ${{ calcularCostoEnvioAmigo(item) | number:'1.0-0' }}</div>
                                                 <hr class="my-2">
-                                                <div class="fw-bold text-success">${{ grupoCalculado.totalConEnvio | number }}</div>
+                                                <div class="fw-bold text-success">${{ grupoCalculado.totalConEnvio | number:'1.0-0' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -126,7 +126,7 @@
                                         <i class="bi bi-person-fill text-secondary"></i>
                                         {{ amigo.nombre }}
                                     </h6>
-                                    <strong class="text-success">Total: ${{ calcularTotalAmigo(amigo, item) | number }}</strong>
+                                    <strong class="text-success">Total: ${{ calcularTotalAmigo(amigo, item) | number:'1.0-0' }}</strong>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -134,14 +134,14 @@
                                     <div class="col-md-8">
                                         <ul class="list-unstyled">
                                             <li *ngFor="let pedido of amigo.pedido" class="mb-1">
-                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number }}
+                                                • {{ pedido.cantidad }}x {{ pedido.gusto }} = ${{ (pedido.cantidad * getCostoEmpanadeDisplay(item)) | number:'1.0-0' }}
                                             </li>
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="small text-muted">
                                             <div>Empanadas: {{ calcularTotalEmpanadasAmigo(amigo) }}</div>
-                                            <div>Subtotal: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number }}</div>
+                                            <div>Subtotal: ${{ calcularCostoEmpanadasAmigo(amigo, item) | number:'1.0-0' }}</div>
                                             <div>Envío: ${{ calcularCostoEnvioSimple(item) | number:'1.0-0' }}</div>
                                         </div>
                                     </div>
@@ -165,7 +165,7 @@
                             <div class="col-12 col-md-6">
                                 <div class="text-md-end">
                                     <div class="mb-1 small"><strong>Total empanadas:</strong> {{ calcularTotalEmpanadas(getAmigosDisplay(item)) }}</div>
-                                    <div class="mb-1 small"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number }}</div>
+                                    <div class="mb-1 small"><strong>Subtotal:</strong> ${{ calcularTotalSinEnvio(item) | number:'1.0-0' }}</div>
                                     <div class="mb-2 small">
                                         <strong>Envío:</strong> ${{ getCostoEnvioDisplay(item) | number }}
                                         <div class="text-muted" style="font-size: 0.8rem;">

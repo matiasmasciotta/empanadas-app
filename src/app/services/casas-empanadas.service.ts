@@ -36,7 +36,14 @@ export class CasasEmpanadasService {
   }
 
   getCasas(): CasaEmpanadas[] {
-    return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
+    const casas: CasaEmpanadas[] = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
+    // Ordenar gustos alfabéticamente en cada casa
+    casas.forEach((casa: CasaEmpanadas) => {
+      if (casa.gustos) {
+        casa.gustos.sort((a: string, b: string) => a.localeCompare(b));
+      }
+    });
+    return casas;
   }
 
   getCasaById(id: string): CasaEmpanadas | null {
@@ -94,6 +101,7 @@ export class CasasEmpanadasService {
     
     if (casa && !casa.gustos.includes(gusto)) {
       casa.gustos.push(gusto);
+      casa.gustos.sort((a: string, b: string) => a.localeCompare(b)); // Mantener orden alfabético
       this.saveCasas(casas);
     }
   }

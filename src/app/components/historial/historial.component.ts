@@ -29,7 +29,7 @@ interface Historial {
     nombre: string;
     telefono?: string;
     precioEmpanada: number;
-    costoEnvio: number;
+  costoEnvio: number;
   };
   totales?: {
     empanadas: number;

@@ -23,13 +23,15 @@ export class AmigosService {
   }
 
   getAmigos(): Amigo[] {
-    return JSON.parse(localStorage.getItem(this.amigosKey) || '[]');
+    const amigos: Amigo[] = JSON.parse(localStorage.getItem(this.amigosKey) || '[]');
+    return amigos.sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
   addAmigo(amigo: Amigo): void {
     const amigos = this.getAmigos();
     if (!amigos.find(a => a.nombre.toUpperCase() === amigo.nombre.toUpperCase())) {
       amigos.push(amigo);
+      amigos.sort((a, b) => a.nombre.localeCompare(b.nombre)); // Mantener orden alfabético
       this.saveAmigos(amigos);
     }
   }
